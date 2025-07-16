@@ -27,22 +27,36 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: 🧹 Clear cache directories
-      if: ${{ env.CACHE_ENABLED == 'true' }}
-      run: |
-        sudo rm -rf ~/.cache/bazel ~/.cache/bazelisk || true
-        mkdir -p ~/.cache/bazel ~/.cache/bazelisk
-      continue-on-error: true
-
     - name: 🏗️ Setup Go
       uses: actions/setup-go@v4
       with:
         go-version: ${{ env.GO_VERSION }}
 
+    - name: 🔍 Debug environment
+      run: |
+        echo "CACHE_ENABLED=${{ env.CACHE_ENABLED }}"
+        echo "BAZEL_VERSION=${{ env.BAZEL_VERSION }}"
+        echo "GO_VERSION=${{ env.GO_VERSION }}"
+        echo "Working directory: $(pwd)"
+        echo "Available disk space: $(df -h . | tail -1)"
+      continue-on-error: true
+
     - name: 🔧 Setup Bazel
       uses: bazelbuild/setup-bazelisk@v2
       with:
-        bazelisk-version: 1.19.0
+        bazelisk-version: 1.20.0
+
+    - name: 🧹 Clear all Bazel cache completely
+      run: |
+        echo "Clearing all Bazel cache directories..."
+        sudo rm -rf ~/.cache/bazel ~/.cache/bazelisk || true
+        sudo rm -rf /tmp/bazel* || true
+        sudo rm -rf ~/.bazel* || true
+        rm -rf bazel-* || true
+        echo "Creating fresh cache directories..."
+        mkdir -p ~/.cache/bazel ~/.cache/bazelisk
+        echo "Cache clearing complete"
+      continue-on-error: true
 
     - name: 📦 Cache Bazel
       id: cache-bazel
@@ -92,11 +106,25 @@ jobs:
 
     - name: 🧪 Run tests
       run: |
-        bazel test //...
+        echo "Running Bazel tests with cache disabled..."
+        bazel test //... \
+          --disk_cache= \
+          --repository_cache= \
+          --noremote_cache \
+          --noremote_upload_local_results \
+          --verbose_failures \
+          --test_output=errors
+      continue-on-error: false
 
     - name: 🔨 Build application
       run: |
-        bazel build //:local-ai
+        echo "Building with Bazel with cache disabled..."
+        bazel build //:local-ai \
+          --disk_cache= \
+          --repository_cache= \
+          --noremote_cache \
+          --noremote_upload_local_results \
+          --verbose_failures
         
     - name: 🔍 Verify build artifacts
       run: |
@@ -127,21 +155,26 @@ jobs:
       env:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
       run: |
-        curl -H "Content-Type: application/json" \
-        -d '{
-          "embeds": [{
-            "title": "🚨 Lore Engine Build Failed",
-            "description": "Build failed for commit `${{ github.sha }}`",
-            "color": 15158332,
-            "fields": [
-              {"name": "Branch", "value": "${{ github.ref_name }}", "inline": true},
-              {"name": "Commit", "value": "${{ github.sha }}", "inline": true},
-              {"name": "Workflow", "value": "${{ github.workflow }}", "inline": true}
-            ],
-            "footer": {"text": "Lore Engine CI/CD"}
-          }]
-        }' \
-        $DISCORD_WEBHOOK
+        if [ -n "$DISCORD_WEBHOOK" ]; then
+          curl -H "Content-Type: application/json" \
+          -d '{
+            "embeds": [{
+              "title": "🚨 Lore Engine Build Failed",
+              "description": "Build failed for commit `${{ github.sha || 'unknown' }}`",
+              "color": 15158332,
+              "fields": [
+                {"name": "Branch", "value": "${{ github.ref_name || 'unknown' }}", "inline": true},
+                {"name": "Commit", "value": "${{ github.sha || 'unknown' }}", "inline": true},
+                {"name": "Workflow", "value": "${{ github.workflow || 'unknown' }}", "inline": true},
+                {"name": "Cache Status", "value": "${{ env.CACHE_ENABLED }}", "inline": true}
+              ],
+              "footer": {"text": "Lore Engine CI/CD"}
+            }]
+          }' "$DISCORD_WEBHOOK"
+        else
+          echo "Discord webhook not configured, skipping notification"
+        fi
+      continue-on-error: true
 
   # Security scanning
   security-scan:
