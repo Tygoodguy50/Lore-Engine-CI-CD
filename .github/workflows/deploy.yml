@@ -13,6 +13,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   GO_VERSION: '1.21'
   BAZEL_VERSION: '7.0.0'
+  CACHE_ENABLED: 'false'
 
 jobs:
   # Build and test the application
@@ -43,15 +44,35 @@ jobs:
         bazelisk-version: 1.19.0
 
     - name: 📦 Cache Bazel
+      id: cache-bazel
+      if: env.CACHE_ENABLED == 'true'
       uses: actions/cache@v4
       with:
-        path: |
-          ~/.cache/bazel
-          ~/.cache/bazelisk
-        key: ${{ runner.os }}-bazel-${{ github.sha }}
+        path: ~/.cache/bazel
+        key: ${{ runner.os }}-bazel-${{ github.run_id }}
         restore-keys: |
-          ${{ runner.os }}-bazel-${{ hashFiles('**/BUILD.bazel', '**/WORKSPACE', '**/MODULE.bazel') }}
           ${{ runner.os }}-bazel-
+      continue-on-error: true
+
+    - name: 📦 Cache Bazelisk 
+      id: cache-bazelisk
+      if: env.CACHE_ENABLED == 'true'
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/bazelisk
+        key: ${{ runner.os }}-bazelisk-${{ github.run_id }}
+        restore-keys: |
+          ${{ runner.os }}-bazelisk-
+      continue-on-error: true
+
+    - name: 🔍 Debug cache status
+      run: |
+        echo "Bazel cache hit: ${{ steps.cache-bazel.outputs.cache-hit }}"
+        echo "Bazelisk cache hit: ${{ steps.cache-bazelisk.outputs.cache-hit }}"
+        echo "Cache directories:"
+        ls -la ~/.cache/ || echo "No cache directory found"
+        mkdir -p ~/.cache/bazel ~/.cache/bazelisk
+        echo "Cache directories created successfully"
       continue-on-error: true
 
     - name: 🔍 Lint Go code
