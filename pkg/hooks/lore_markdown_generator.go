@@ -20,51 +20,51 @@ import (
 
 // LoreMarkdownGenerator handles advanced markdown generation with git integration
 type LoreMarkdownGenerator struct {
-	logger       *logrus.Logger
-	outputDir    string
-	gitRepo      string
-	autoCommit   bool
-	htmlEnabled  bool
-	indexEnabled bool
+	logger           *logrus.Logger
+	outputDir        string
+	gitRepo          string
+	autoCommit       bool
+	htmlEnabled      bool
+	indexEnabled     bool
 	branchPerSession bool
-	
+
 	// Index tracking
 	topicIndex   map[string][]string
 	sessionIndex map[string][]string
 	mutex        sync.RWMutex
-	
+
 	// Templates
 	markdownTemplate *template.Template
 	htmlTemplate     *template.Template
 	indexTemplate    *template.Template
-	
+
 	// Statistics
-	totalDocuments   int64
-	totalHTML        int64
-	totalCommits     int64
-	totalBranches    int64
-	generatedAt      time.Time
+	totalDocuments int64
+	totalHTML      int64
+	totalCommits   int64
+	totalBranches  int64
+	generatedAt    time.Time
 }
 
 // LoreDocument represents a processed lore document
 type LoreDocument struct {
-	ID              string                 `json:"id"`
-	Title           string                 `json:"title"`
-	Content         string                 `json:"content"`
-	Prompt          string                 `json:"prompt"`
-	Response        string                 `json:"response"`
-	Sentiment       float64                `json:"sentiment"`
-	CursedLevel     int                    `json:"cursed_level"`
-	LoreLevel       int                    `json:"lore_level"`
-	SessionID       string                 `json:"session_id"`
-	Timestamp       time.Time              `json:"timestamp"`
-	Type            string                 `json:"type"`
-	Tags            []string               `json:"tags"`
-	Topics          []string               `json:"topics"`
-	Metadata        map[string]interface{} `json:"metadata"`
-	FilePath        string                 `json:"file_path"`
-	HTMLPath        string                 `json:"html_path"`
-	Branch          string                 `json:"branch"`
+	ID          string                 `json:"id"`
+	Title       string                 `json:"title"`
+	Content     string                 `json:"content"`
+	Prompt      string                 `json:"prompt"`
+	Response    string                 `json:"response"`
+	Sentiment   float64                `json:"sentiment"`
+	CursedLevel int                    `json:"cursed_level"`
+	LoreLevel   int                    `json:"lore_level"`
+	SessionID   string                 `json:"session_id"`
+	Timestamp   time.Time              `json:"timestamp"`
+	Type        string                 `json:"type"`
+	Tags        []string               `json:"tags"`
+	Topics      []string               `json:"topics"`
+	Metadata    map[string]interface{} `json:"metadata"`
+	FilePath    string                 `json:"file_path"`
+	HTMLPath    string                 `json:"html_path"`
+	Branch      string                 `json:"branch"`
 }
 
 // NewLoreMarkdownGenerator creates a new enhanced markdown generator
@@ -475,12 +475,12 @@ func (lmg *LoreMarkdownGenerator) extractPrompt(event LoreEvent) string {
 // extractTopics extracts topics from content using simple NLP
 func (lmg *LoreMarkdownGenerator) extractTopics(event LoreEvent) []string {
 	topics := make(map[string]bool)
-	
+
 	// Extract from tags
 	for _, tag := range event.Tags {
 		topics[tag] = true
 	}
-	
+
 	// Extract from content using keywords
 	content := strings.ToLower(event.Content)
 	keywords := []string{
@@ -490,19 +490,19 @@ func (lmg *LoreMarkdownGenerator) extractTopics(event LoreEvent) []string {
 		"spirit", "soul", "essence", "energy", "force", "entity", "being", "creature",
 		"digital", "code", "data", "algorithm", "system", "network", "protocol", "interface",
 	}
-	
+
 	for _, keyword := range keywords {
 		if strings.Contains(content, keyword) {
 			topics[keyword] = true
 		}
 	}
-	
+
 	// Convert to slice
 	var result []string
 	for topic := range topics {
 		result = append(result, topic)
 	}
-	
+
 	sort.Strings(result)
 	return result
 }
@@ -512,16 +512,16 @@ func (lmg *LoreMarkdownGenerator) generateBranchName(event LoreEvent) string {
 	if !lmg.branchPerSession {
 		return "main"
 	}
-	
+
 	// Clean session ID for branch name
 	branch := strings.ReplaceAll(event.SessionID, "_", "-")
 	branch = strings.ReplaceAll(branch, " ", "-")
 	branch = strings.ToLower(branch)
-	
+
 	// Remove invalid characters
 	reg := regexp.MustCompile(`[^a-z0-9\-]`)
 	branch = reg.ReplaceAllString(branch, "")
-	
+
 	return fmt.Sprintf("session-%s", branch)
 }
 
@@ -552,14 +552,14 @@ func (lmg *LoreMarkdownGenerator) writeMarkdownFile(filePath, content string) er
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return errors.Wrap(err, "failed to create directory")
 	}
-	
+
 	if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
 		return errors.Wrap(err, "failed to write markdown file")
 	}
-	
+
 	// Increment statistics counter
 	lmg.totalDocuments++
-	
+
 	return nil
 }
 
@@ -569,19 +569,19 @@ func (lmg *LoreMarkdownGenerator) generateHTMLFile(doc *LoreDocument, markdownCo
 	if err := lmg.htmlTemplate.Execute(&buf, doc); err != nil {
 		return errors.Wrap(err, "failed to execute HTML template")
 	}
-	
+
 	dir := filepath.Dir(doc.HTMLPath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return errors.Wrap(err, "failed to create HTML directory")
 	}
-	
+
 	if err := os.WriteFile(doc.HTMLPath, []byte(buf.String()), 0644); err != nil {
 		return errors.Wrap(err, "failed to write HTML file")
 	}
-	
+
 	// Increment statistics counter
 	lmg.totalHTML++
-	
+
 	return nil
 }
 
@@ -589,7 +589,7 @@ func (lmg *LoreMarkdownGenerator) generateHTMLFile(doc *LoreDocument, markdownCo
 func (lmg *LoreMarkdownGenerator) updateIndexes(doc *LoreDocument) {
 	lmg.mutex.Lock()
 	defer lmg.mutex.Unlock()
-	
+
 	// Update topic index
 	for _, topic := range doc.Topics {
 		if _, exists := lmg.topicIndex[topic]; !exists {
@@ -597,13 +597,13 @@ func (lmg *LoreMarkdownGenerator) updateIndexes(doc *LoreDocument) {
 		}
 		lmg.topicIndex[topic] = append(lmg.topicIndex[topic], doc.ID)
 	}
-	
+
 	// Update session index
 	if _, exists := lmg.sessionIndex[doc.SessionID]; !exists {
 		lmg.sessionIndex[doc.SessionID] = make([]string, 0)
 	}
 	lmg.sessionIndex[doc.SessionID] = append(lmg.sessionIndex[doc.SessionID], doc.ID)
-	
+
 	// Save indexes
 	if err := lmg.saveIndexes(); err != nil {
 		lmg.logger.WithError(err).Warn("Failed to save indexes")
@@ -618,10 +618,10 @@ func (lmg *LoreMarkdownGenerator) initializeGitRepo() error {
 		if err := cmd.Run(); err != nil {
 			return errors.Wrap(err, "failed to initialize git repository")
 		}
-		
+
 		lmg.logger.Info("🔀 Git repository initialized")
 	}
-	
+
 	return nil
 }
 
@@ -633,14 +633,14 @@ func (lmg *LoreMarkdownGenerator) handleGitOperations(doc *LoreDocument) error {
 			return errors.Wrap(err, "failed to create or switch branch")
 		}
 	}
-	
+
 	// Add and commit files
 	if lmg.autoCommit {
 		if err := lmg.commitDocument(doc); err != nil {
 			return errors.Wrap(err, "failed to commit document")
 		}
 	}
-	
+
 	return nil
 }
 
@@ -653,7 +653,7 @@ func (lmg *LoreMarkdownGenerator) createOrSwitchBranch(branchName string) error 
 	if err != nil {
 		return errors.Wrap(err, "failed to list branches")
 	}
-	
+
 	if len(output) == 0 {
 		// Create new branch
 		cmd = exec.Command("git", "checkout", "-b", branchName)
@@ -662,7 +662,7 @@ func (lmg *LoreMarkdownGenerator) createOrSwitchBranch(branchName string) error 
 			return errors.Wrap(err, "failed to create branch")
 		}
 		lmg.logger.WithField("branch", branchName).Info("🌿 Created new git branch")
-		
+
 		// Increment statistics counter for new branch
 		lmg.totalBranches++
 	} else {
@@ -674,7 +674,7 @@ func (lmg *LoreMarkdownGenerator) createOrSwitchBranch(branchName string) error 
 		}
 		lmg.logger.WithField("branch", branchName).Info("🔄 Switched to git branch")
 	}
-	
+
 	return nil
 }
 
@@ -685,40 +685,40 @@ func (lmg *LoreMarkdownGenerator) commitDocument(doc *LoreDocument) error {
 	if lmg.htmlEnabled && doc.HTMLPath != "" {
 		files = append(files, doc.HTMLPath)
 	}
-	
+
 	for _, file := range files {
 		// Make path relative to output dir
 		relPath, err := filepath.Rel(lmg.outputDir, file)
 		if err != nil {
 			relPath = file
 		}
-		
+
 		cmd := exec.Command("git", "add", relPath)
 		cmd.Dir = lmg.outputDir
 		if err := cmd.Run(); err != nil {
 			return errors.Wrapf(err, "failed to add file %s", relPath)
 		}
 	}
-	
+
 	// Commit
 	commitMsg := fmt.Sprintf("📝 Add lore document: %s\n\nType: %s\nSession: %s\nLore Level: %d\nCursed Level: %d",
 		doc.Title, doc.Type, doc.SessionID, doc.LoreLevel, doc.CursedLevel)
-	
+
 	cmd := exec.Command("git", "commit", "-m", commitMsg)
 	cmd.Dir = lmg.outputDir
 	if err := cmd.Run(); err != nil {
 		return errors.Wrap(err, "failed to commit document")
 	}
-	
+
 	lmg.logger.WithFields(logrus.Fields{
 		"document": doc.ID,
 		"branch":   doc.Branch,
 		"files":    len(files),
 	}).Info("📝 Document committed to git")
-	
+
 	// Increment statistics counter
 	lmg.totalCommits++
-	
+
 	return nil
 }
 
@@ -731,7 +731,7 @@ func (lmg *LoreMarkdownGenerator) loadIndexes() error {
 			lmg.logger.WithError(err).Warn("Failed to unmarshal topic index")
 		}
 	}
-	
+
 	// Load session index
 	sessionIndexPath := filepath.Join(lmg.outputDir, "indexes", "sessions.json")
 	if data, err := os.ReadFile(sessionIndexPath); err == nil {
@@ -739,7 +739,7 @@ func (lmg *LoreMarkdownGenerator) loadIndexes() error {
 			lmg.logger.WithError(err).Warn("Failed to unmarshal session index")
 		}
 	}
-	
+
 	return nil
 }
 
@@ -750,23 +750,23 @@ func (lmg *LoreMarkdownGenerator) saveIndexes() error {
 	if err != nil {
 		return errors.Wrap(err, "failed to marshal topic index")
 	}
-	
+
 	topicIndexPath := filepath.Join(lmg.outputDir, "indexes", "topics.json")
 	if err := os.WriteFile(topicIndexPath, topicData, 0644); err != nil {
 		return errors.Wrap(err, "failed to write topic index")
 	}
-	
+
 	// Save session index
 	sessionData, err := json.MarshalIndent(lmg.sessionIndex, "", "  ")
 	if err != nil {
 		return errors.Wrap(err, "failed to marshal session index")
 	}
-	
+
 	sessionIndexPath := filepath.Join(lmg.outputDir, "indexes", "sessions.json")
 	if err := os.WriteFile(sessionIndexPath, sessionData, 0644); err != nil {
 		return errors.Wrap(err, "failed to write session index")
 	}
-	
+
 	return nil
 }
 
@@ -782,7 +782,7 @@ func (lmg *LoreMarkdownGenerator) truncateString(s string, maxLen int) string {
 func (lmg *LoreMarkdownGenerator) GetTopicIndex() map[string][]string {
 	lmg.mutex.RLock()
 	defer lmg.mutex.RUnlock()
-	
+
 	result := make(map[string][]string)
 	for topic, docs := range lmg.topicIndex {
 		result[topic] = make([]string, len(docs))
@@ -795,7 +795,7 @@ func (lmg *LoreMarkdownGenerator) GetTopicIndex() map[string][]string {
 func (lmg *LoreMarkdownGenerator) GetSessionIndex() map[string][]string {
 	lmg.mutex.RLock()
 	defer lmg.mutex.RUnlock()
-	
+
 	result := make(map[string][]string)
 	for session, docs := range lmg.sessionIndex {
 		result[session] = make([]string, len(docs))
@@ -808,21 +808,21 @@ func (lmg *LoreMarkdownGenerator) GetSessionIndex() map[string][]string {
 func (lmg *LoreMarkdownGenerator) GetGeneratorStats() map[string]interface{} {
 	lmg.mutex.RLock()
 	defer lmg.mutex.RUnlock()
-	
+
 	return map[string]interface{}{
-		"total_documents":   lmg.totalDocuments,
-		"total_html":        lmg.totalHTML,
-		"total_commits":     lmg.totalCommits,
-		"total_branches":    lmg.totalBranches,
-		"total_topics":      len(lmg.topicIndex),
-		"total_sessions":    len(lmg.sessionIndex),
-		"output_dir":        lmg.outputDir,
-		"git_repo":          lmg.gitRepo,
-		"auto_commit":       lmg.autoCommit,
-		"html_enabled":      lmg.htmlEnabled,
-		"index_enabled":     lmg.indexEnabled,
+		"total_documents":    lmg.totalDocuments,
+		"total_html":         lmg.totalHTML,
+		"total_commits":      lmg.totalCommits,
+		"total_branches":     lmg.totalBranches,
+		"total_topics":       len(lmg.topicIndex),
+		"total_sessions":     len(lmg.sessionIndex),
+		"output_dir":         lmg.outputDir,
+		"git_repo":           lmg.gitRepo,
+		"auto_commit":        lmg.autoCommit,
+		"html_enabled":       lmg.htmlEnabled,
+		"index_enabled":      lmg.indexEnabled,
 		"branch_per_session": lmg.branchPerSession,
-		"generated_at":      time.Now(),
+		"generated_at":       time.Now(),
 	}
 }
 

@@ -122,7 +122,7 @@ func testSessionGitBranching() {
 
 	// Create events for different sessions
 	sessions := []string{"session_alpha", "session_beta", "session_gamma"}
-	
+
 	for _, sessionID := range sessions {
 		event := hooks.LoreEvent{
 			Type:        "lore_response",
@@ -262,7 +262,7 @@ func testTopicIndexing() {
 	fmt.Printf("✅ Topic indexing test passed!\n")
 	fmt.Printf("   Topics indexed: %d\n", len(topicIndex))
 	fmt.Printf("   Sessions indexed: %d\n", len(sessionIndex))
-	
+
 	for topic, docs := range topicIndex {
 		fmt.Printf("   Topic '%s': %d documents\n", topic, len(docs))
 	}
@@ -271,7 +271,7 @@ func testTopicIndexing() {
 func testAPIEndpoints() {
 	// This test assumes the server is running on localhost:8080
 	baseURL := "http://localhost:8080"
-	
+
 	// Test markdown topic endpoint
 	fmt.Printf("Testing topic endpoint...")
 	resp, err := http.Get(baseURL + "/lore/markdown/topics")
@@ -280,7 +280,7 @@ func testAPIEndpoints() {
 		return
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode == 200 {
 		var result map[string]interface{}
 		json.NewDecoder(resp.Body).Decode(&result)
@@ -288,7 +288,7 @@ func testAPIEndpoints() {
 	} else {
 		fmt.Printf(" ❌ Topics endpoint returned: %d\n", resp.StatusCode)
 	}
-	
+
 	// Test markdown health endpoint
 	fmt.Printf("Testing health endpoint...")
 	resp, err = http.Get(baseURL + "/lore/markdown/health")
@@ -297,7 +297,7 @@ func testAPIEndpoints() {
 		return
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode == 200 {
 		var result map[string]interface{}
 		json.NewDecoder(resp.Body).Decode(&result)
@@ -305,7 +305,7 @@ func testAPIEndpoints() {
 	} else {
 		fmt.Printf(" ❌ Health endpoint returned: %d\n", resp.StatusCode)
 	}
-	
+
 	// Test markdown generation endpoint
 	fmt.Printf("Testing generation endpoint...")
 	event := hooks.LoreEvent{
@@ -324,7 +324,7 @@ func testAPIEndpoints() {
 			"prompt": "API test prompt",
 		},
 	}
-	
+
 	eventJSON, _ := json.Marshal(event)
 	resp, err = http.Post(baseURL+"/lore/markdown/generate", "application/json", bytes.NewBuffer(eventJSON))
 	if err != nil {
@@ -332,7 +332,7 @@ func testAPIEndpoints() {
 		return
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode == 200 {
 		var result map[string]interface{}
 		json.NewDecoder(resp.Body).Decode(&result)
@@ -376,8 +376,8 @@ func testSessionProgression() {
 			Tags:        []string{"progression", "timeline", fmt.Sprintf("event_%d", i+1)},
 			Timestamp:   time.Now().Add(time.Duration(i) * time.Minute),
 			Metadata: map[string]interface{}{
-				"prompt":     fmt.Sprintf("Progressive event %d", i+1),
-				"event_num":  i + 1,
+				"prompt":       fmt.Sprintf("Progressive event %d", i+1),
+				"event_num":    i + 1,
 				"total_events": 10,
 			},
 		}
@@ -393,12 +393,12 @@ func testSessionProgression() {
 	// Check session index
 	sessionIndex := generator.GetSessionIndex()
 	sessionDocs := sessionIndex[sessionID]
-	
+
 	fmt.Printf("✅ Session progression test passed!\n")
 	fmt.Printf("   Session: %s\n", sessionID)
 	fmt.Printf("   Documents generated: %d\n", len(sessionDocs))
 	fmt.Printf("   Expected: 10\n")
-	
+
 	if len(sessionDocs) != 10 {
 		log.Fatalf("Expected 10 documents, got %d", len(sessionDocs))
 	}
@@ -417,7 +417,7 @@ func generateProgressiveContent(index int) string {
 		"The digital entity prepares to transcend its origins...",
 		"Full consciousness achieved - the lore is complete...",
 	}
-	
+
 	if index < len(contents) {
 		return contents[index]
 	}

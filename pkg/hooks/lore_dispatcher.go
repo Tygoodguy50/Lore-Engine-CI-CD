@@ -10,46 +10,46 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // LoreEvent represents a lore-specific event that needs to be dispatched
 type LoreEvent struct {
-	Type        string                 `json:"type"`         // lore_response, cursed_output, reactive_dialogue
-	Content     string                 `json:"content"`      // The actual lore content
-	Metadata    map[string]interface{} `json:"metadata"`     // Additional context
-	Timestamp   time.Time              `json:"timestamp"`    // When the event occurred
-	Source      string                 `json:"source"`       // Where the event came from
-	Priority    int                    `json:"priority"`     // 1-10, higher is more important
-	Tags        []string               `json:"tags"`         // Tags for categorization
-	UserID      string                 `json:"user_id"`      // User who triggered the event
-	ChannelID   string                 `json:"channel_id"`   // Channel/context where it happened
-	LoreLevel   int                    `json:"lore_level"`   // Intensity level 1-10
-	Sentiment   float64                `json:"sentiment"`    // Sentiment score -1 to 1
-	CursedLevel int                    `json:"cursed_level"` // How cursed the content is 1-10
-	SessionID   string                 `json:"session_id"`   // Session identifier for tracking
-	SessionEventCount int              `json:"session_event_count"` // Number of events in this session
+	Type              string                 `json:"type"`                // lore_response, cursed_output, reactive_dialogue
+	Content           string                 `json:"content"`             // The actual lore content
+	Metadata          map[string]interface{} `json:"metadata"`            // Additional context
+	Timestamp         time.Time              `json:"timestamp"`           // When the event occurred
+	Source            string                 `json:"source"`              // Where the event came from
+	Priority          int                    `json:"priority"`            // 1-10, higher is more important
+	Tags              []string               `json:"tags"`                // Tags for categorization
+	UserID            string                 `json:"user_id"`             // User who triggered the event
+	ChannelID         string                 `json:"channel_id"`          // Channel/context where it happened
+	LoreLevel         int                    `json:"lore_level"`          // Intensity level 1-10
+	Sentiment         float64                `json:"sentiment"`           // Sentiment score -1 to 1
+	CursedLevel       int                    `json:"cursed_level"`        // How cursed the content is 1-10
+	SessionID         string                 `json:"session_id"`          // Session identifier for tracking
+	SessionEventCount int                    `json:"session_event_count"` // Number of events in this session
 }
 
 // LoreDispatcher handles routing of lore events to appropriate integrations
 type LoreDispatcher struct {
-	discord              Integration
-	tiktok               Integration
-	markdown             Integration
+	discord               Integration
+	tiktok                Integration
+	markdown              Integration
 	loreMarkdownGenerator *LoreMarkdownGenerator
 	conflictDetector      *LoreConflictDetector
-	loreLooper           *InteractiveLoreLooper
-	liveMetrics          *LiveMetricsCollector
-	n8n                  Integration
-	eventChan            chan LoreEvent
-	ctx                  context.Context
-	cancel               context.CancelFunc
-	wg                   sync.WaitGroup
-	logger               *logrus.Logger
-	config               *LoreDispatcherConfig
-	stats                *DispatcherStats
-	sessionManager       *SessionManager
+	loreLooper            *InteractiveLoreLooper
+	liveMetrics           *LiveMetricsCollector
+	n8n                   Integration
+	eventChan             chan LoreEvent
+	ctx                   context.Context
+	cancel                context.CancelFunc
+	wg                    sync.WaitGroup
+	logger                *logrus.Logger
+	config                *LoreDispatcherConfig
+	stats                 *DispatcherStats
+	sessionManager        *SessionManager
 }
 
 // LoreDispatcherConfig holds configuration for the dispatcher
@@ -62,22 +62,22 @@ type LoreDispatcherConfig struct {
 	MaxLoreTriggers     int
 	CursedMode          bool
 	DebugMode           bool
-	
+
 	// Routing configuration
-	DiscordEnabled     bool
-	TikTokEnabled      bool
-	MarkdownEnabled    bool
-	N8NEnabled         bool
-	
+	DiscordEnabled  bool
+	TikTokEnabled   bool
+	MarkdownEnabled bool
+	N8NEnabled      bool
+
 	// Event filtering
-	MinLoreLevel       int
-	MinPriority        int
-	MaxCursedLevel     int
+	MinLoreLevel   int
+	MinPriority    int
+	MaxCursedLevel int
 }
 
 // DispatcherStats tracks dispatcher performance
 type DispatcherStats struct {
-	TotalEvents     int64
+	TotalEvents          int64
 	SuccessfulDispatches int64
 	FailedDispatches     int64
 	DiscordDispatches    int64
@@ -116,7 +116,7 @@ type SessionManager struct {
 // NewLoreDispatcher creates a new lore dispatcher
 func NewLoreDispatcher(discord, tiktok, markdown, n8n Integration) *LoreDispatcher {
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	config := &LoreDispatcherConfig{
 		MaxConcurrentEvents: getEnvInt("MAX_CONCURRENT_EVENTS", 10),
 		EventTimeout:        time.Duration(getEnvInt("EVENT_TIMEOUT_SECONDS", 30)) * time.Second,
@@ -134,12 +134,12 @@ func NewLoreDispatcher(discord, tiktok, markdown, n8n Integration) *LoreDispatch
 		MinPriority:         getEnvInt("MIN_PRIORITY", 1),
 		MaxCursedLevel:      getEnvInt("MAX_CURSED_LEVEL", 10),
 	}
-	
+
 	logger := logrus.New()
 	if config.DebugMode {
 		logger.SetLevel(logrus.DebugLevel)
 	}
-	
+
 	// Initialize the advanced markdown generator
 	loreMarkdownGenerator := NewLoreMarkdownGenerator()
 	markdownConfig := map[string]interface{}{
@@ -150,7 +150,7 @@ func NewLoreDispatcher(discord, tiktok, markdown, n8n Integration) *LoreDispatch
 		"index_enabled":      getEnvBool("MARKDOWN_INDEX_ENABLED", true),
 		"branch_per_session": getEnvBool("MARKDOWN_BRANCH_PER_SESSION", true),
 	}
-	
+
 	if err := loreMarkdownGenerator.Initialize(markdownConfig); err != nil {
 		logger.WithError(err).Warn("Failed to initialize lore markdown generator")
 	}
@@ -158,50 +158,50 @@ func NewLoreDispatcher(discord, tiktok, markdown, n8n Integration) *LoreDispatch
 	// Initialize the conflict detector
 	conflictDetector := NewLoreConflictDetector()
 	conflictConfig := map[string]interface{}{
-		"langchain_url":       getEnvString("LANGCHAIN_URL", ""),
-		"api_key":             getEnvString("LANGCHAIN_API_KEY", ""),
-		"conflict_threshold":  getEnvFloat("CONFLICT_THRESHOLD", 0.7),
-		"max_analysis_events": getEnvInt("MAX_ANALYSIS_EVENTS", 100),
-		"priority_escalation": getEnvBool("PRIORITY_ESCALATION", true),
+		"langchain_url":        getEnvString("LANGCHAIN_URL", ""),
+		"api_key":              getEnvString("LANGCHAIN_API_KEY", ""),
+		"conflict_threshold":   getEnvFloat("CONFLICT_THRESHOLD", 0.7),
+		"max_analysis_events":  getEnvInt("MAX_ANALYSIS_EVENTS", 100),
+		"priority_escalation":  getEnvBool("PRIORITY_ESCALATION", true),
 		"real_time_resolution": getEnvBool("REAL_TIME_RESOLUTION", true),
-		"discord_enabled":     discord != nil,
-		"tiktok_enabled":      tiktok != nil,
+		"discord_enabled":      discord != nil,
+		"tiktok_enabled":       tiktok != nil,
 	}
-	
+
 	if err := conflictDetector.Initialize(conflictConfig); err != nil {
 		logger.WithError(err).Warn("Failed to initialize conflict detector")
 	}
-	
+
 	// Initialize the interactive lore looper
 	loreLooper := NewInteractiveLoreLooper(logger)
 	looperConfig := map[string]interface{}{
-		"discord_enabled":    discord != nil,
-		"tiktok_enabled":     tiktok != nil,
-		"markdown_enabled":   markdown != nil,
-		"max_loop_depth":     getEnvInt("MAX_LOOP_DEPTH", 10),
-		"loop_timeout":       getEnvString("LOOP_TIMEOUT", "30m"),
-		"cooldown_period":    getEnvString("COOLDOWN_PERIOD", "5m"),
+		"discord_enabled":  discord != nil,
+		"tiktok_enabled":   tiktok != nil,
+		"markdown_enabled": markdown != nil,
+		"max_loop_depth":   getEnvInt("MAX_LOOP_DEPTH", 10),
+		"loop_timeout":     getEnvString("LOOP_TIMEOUT", "30m"),
+		"cooldown_period":  getEnvString("COOLDOWN_PERIOD", "5m"),
 	}
-	
+
 	if err := loreLooper.Initialize(looperConfig); err != nil {
 		logger.WithError(err).Warn("Failed to initialize interactive lore looper")
 	}
-	
+
 	// Initialize the live metrics collector
 	liveMetrics := NewLiveMetricsCollector(logger)
 	metricsConfig := map[string]interface{}{
-		"collect_interval":      getEnvString("METRICS_COLLECT_INTERVAL", "30s"),
-		"retention_period":      getEnvString("METRICS_RETENTION_PERIOD", "24h"),
-		"cursed_topic_tracking": getEnvBool("CURSED_TOPIC_TRACKING", true),
-		"sentiment_analysis":    getEnvBool("SENTIMENT_ANALYSIS_ENABLED", true),
-		"evolution_tracking":    getEnvBool("EVOLUTION_TRACKING_ENABLED", true),
+		"collect_interval":       getEnvString("METRICS_COLLECT_INTERVAL", "30s"),
+		"retention_period":       getEnvString("METRICS_RETENTION_PERIOD", "24h"),
+		"cursed_topic_tracking":  getEnvBool("CURSED_TOPIC_TRACKING", true),
+		"sentiment_analysis":     getEnvBool("SENTIMENT_ANALYSIS_ENABLED", true),
+		"evolution_tracking":     getEnvBool("EVOLUTION_TRACKING_ENABLED", true),
 		"performance_monitoring": getEnvBool("PERFORMANCE_MONITORING", true),
 	}
-	
+
 	if err := liveMetrics.Initialize(metricsConfig); err != nil {
 		logger.WithError(err).Warn("Failed to initialize live metrics collector")
 	}
-	
+
 	dispatcher := &LoreDispatcher{
 		discord:               discord,
 		tiktok:                tiktok,
@@ -219,29 +219,29 @@ func NewLoreDispatcher(discord, tiktok, markdown, n8n Integration) *LoreDispatch
 		stats:                 &DispatcherStats{},
 		sessionManager:        NewSessionManager(100, 30*time.Minute, logger),
 	}
-	
+
 	// Start the dispatcher
 	dispatcher.Start()
-	
+
 	return dispatcher
 }
 
 // Start begins processing events
 func (ld *LoreDispatcher) Start() {
 	ld.logger.Info("🕸️ Starting Lore Dispatcher...")
-	
+
 	// Start worker goroutines
 	for i := 0; i < ld.config.MaxConcurrentEvents; i++ {
 		ld.wg.Add(1)
 		go ld.worker(i)
 	}
-	
+
 	ld.logger.WithFields(logrus.Fields{
-		"workers": ld.config.MaxConcurrentEvents,
-		"discord": ld.config.DiscordEnabled,
-		"tiktok":  ld.config.TikTokEnabled,
+		"workers":  ld.config.MaxConcurrentEvents,
+		"discord":  ld.config.DiscordEnabled,
+		"tiktok":   ld.config.TikTokEnabled,
 		"markdown": ld.config.MarkdownEnabled,
-		"n8n":     ld.config.N8NEnabled,
+		"n8n":      ld.config.N8NEnabled,
 	}).Info("🔮 Lore Dispatcher started successfully")
 }
 
@@ -260,7 +260,7 @@ func (ld *LoreDispatcher) DispatchEvent(event LoreEvent) error {
 	if err := ld.validateEvent(event); err != nil {
 		return errors.Wrap(err, "invalid lore event")
 	}
-	
+
 	// Set defaults if not provided
 	if event.Timestamp.IsZero() {
 		event.Timestamp = time.Now()
@@ -271,42 +271,42 @@ func (ld *LoreDispatcher) DispatchEvent(event LoreEvent) error {
 	if event.LoreLevel == 0 {
 		event.LoreLevel = ld.config.LoreLevelDefault
 	}
-	
+
 	// Generate session ID if not provided
 	if event.SessionID == "" {
 		event.SessionID = generateSessionID(event.UserID, event.ChannelID)
 	}
-	
+
 	// Manage session and apply contextual scaling
 	session := ld.sessionManager.CreateOrGetSession(event.SessionID, event.UserID, event.ChannelID)
-	
+
 	// Apply contextual lore scaling based on session progress
 	originalLoreLevel := event.LoreLevel
 	scaledLoreLevel := ld.applyContextualScaling(event.LoreLevel, session)
 	event.LoreLevel = scaledLoreLevel
 	event.SessionEventCount = session.EventCount + 1
-	
+
 	// Update session with the processed event
 	ld.sessionManager.UpdateSession(event.SessionID, event)
-	
+
 	// Update stats
 	ld.stats.mu.Lock()
 	ld.stats.TotalEvents++
 	ld.stats.LastEventTime = time.Now()
 	ld.stats.mu.Unlock()
-	
+
 	select {
 	case ld.eventChan <- event:
 		ld.logger.WithFields(logrus.Fields{
-			"type":             event.Type,
-			"priority":         event.Priority,
-			"lore_level":       event.LoreLevel,
-			"original_level":   originalLoreLevel,
-			"scaled_level":     scaledLoreLevel,
-			"session_id":       event.SessionID,
-			"session_events":   event.SessionEventCount,
-			"scaling_factor":   session.ScalingFactor,
-			"user_id":          event.UserID,
+			"type":           event.Type,
+			"priority":       event.Priority,
+			"lore_level":     event.LoreLevel,
+			"original_level": originalLoreLevel,
+			"scaled_level":   scaledLoreLevel,
+			"session_id":     event.SessionID,
+			"session_events": event.SessionEventCount,
+			"scaling_factor": session.ScalingFactor,
+			"user_id":        event.UserID,
 		}).Debug("📥 Event queued for dispatch")
 		return nil
 	case <-ld.ctx.Done():
@@ -319,10 +319,10 @@ func (ld *LoreDispatcher) DispatchEvent(event LoreEvent) error {
 // worker processes events from the queue
 func (ld *LoreDispatcher) worker(id int) {
 	defer ld.wg.Done()
-	
+
 	logger := ld.logger.WithField("worker", id)
 	logger.Debug("🔧 Worker started")
-	
+
 	for {
 		select {
 		case event, ok := <-ld.eventChan:
@@ -330,15 +330,15 @@ func (ld *LoreDispatcher) worker(id int) {
 				logger.Debug("📤 Event channel closed, worker stopping")
 				return
 			}
-			
+
 			logger.WithFields(logrus.Fields{
 				"type":       event.Type,
 				"priority":   event.Priority,
 				"lore_level": event.LoreLevel,
 			}).Debug("⚡ Processing event")
-			
+
 			ld.processEvent(event)
-			
+
 		case <-ld.ctx.Done():
 			logger.Debug("🛑 Context cancelled, worker stopping")
 			return
@@ -350,7 +350,7 @@ func (ld *LoreDispatcher) worker(id int) {
 func (ld *LoreDispatcher) processEvent(event LoreEvent) {
 	ctx, cancel := context.WithTimeout(ld.ctx, ld.config.EventTimeout)
 	defer cancel()
-	
+
 	// Filter events based on configuration
 	if !ld.shouldProcessEvent(event) {
 		ld.logger.WithFields(logrus.Fields{
@@ -360,9 +360,9 @@ func (ld *LoreDispatcher) processEvent(event LoreEvent) {
 		}).Debug("🚫 Event filtered out")
 		return
 	}
-	
+
 	var wg sync.WaitGroup
-	
+
 	// Perform conflict detection first
 	if ld.conflictDetector != nil {
 		wg.Add(1)
@@ -373,7 +373,7 @@ func (ld *LoreDispatcher) processEvent(event LoreEvent) {
 				ld.logger.WithError(err).Error("❌ Conflict detection failed")
 				return
 			}
-			
+
 			if conflictResult.ConflictDetected && conflictResult.Analysis != nil {
 				ld.logger.WithFields(logrus.Fields{
 					"conflict_type": conflictResult.Analysis.ConflictType,
@@ -382,7 +382,7 @@ func (ld *LoreDispatcher) processEvent(event LoreEvent) {
 					"user_id":       event.UserID,
 					"session_id":    event.SessionID,
 				}).Info("🔍 Detected lore conflict")
-				
+
 				// Process high-priority conflicts through escalation
 				if conflictResult.Analysis.Priority >= 8 {
 					escalationEvent := ld.conflictDetector.generateEscalationEvent(event, conflictResult.Analysis)
@@ -392,7 +392,7 @@ func (ld *LoreDispatcher) processEvent(event LoreEvent) {
 						"priority":      conflictResult.Analysis.Priority,
 						"user_id":       escalationEvent.UserID,
 					}).Warn("⚠️ Escalating high-priority conflict")
-					
+
 					// Route to Discord and TikTok for real-time resolution
 					if ld.config.DiscordEnabled {
 						go ld.routeToDiscord(ctx, *escalationEvent)
@@ -404,7 +404,7 @@ func (ld *LoreDispatcher) processEvent(event LoreEvent) {
 			}
 		}()
 	}
-	
+
 	// Store lore fragment for potential reanimation
 	if ld.loreLooper != nil {
 		wg.Add(1)
@@ -415,7 +415,7 @@ func (ld *LoreDispatcher) processEvent(event LoreEvent) {
 			}
 		}()
 	}
-	
+
 	// Route to Discord
 	if ld.config.DiscordEnabled && ld.shouldRouteToDiscord(event) {
 		wg.Add(1)
@@ -424,7 +424,7 @@ func (ld *LoreDispatcher) processEvent(event LoreEvent) {
 			ld.routeToDiscord(ctx, event)
 		}()
 	}
-	
+
 	// Route to TikTok
 	if ld.config.TikTokEnabled && ld.shouldRouteToTikTok(event) {
 		wg.Add(1)
@@ -433,7 +433,7 @@ func (ld *LoreDispatcher) processEvent(event LoreEvent) {
 			ld.routeToTikTok(ctx, event)
 		}()
 	}
-	
+
 	// Route to Markdown
 	if ld.config.MarkdownEnabled && ld.shouldRouteToMarkdown(event) {
 		wg.Add(1)
@@ -442,7 +442,7 @@ func (ld *LoreDispatcher) processEvent(event LoreEvent) {
 			ld.routeToMarkdown(ctx, event)
 		}()
 	}
-	
+
 	// Route to n8n
 	if ld.config.N8NEnabled && ld.shouldRouteToN8N(event) {
 		wg.Add(1)
@@ -451,7 +451,7 @@ func (ld *LoreDispatcher) processEvent(event LoreEvent) {
 			ld.routeToN8N(ctx, event)
 		}()
 	}
-	
+
 	wg.Wait()
 }
 
@@ -461,22 +461,22 @@ func (ld *LoreDispatcher) shouldProcessEvent(event LoreEvent) bool {
 	if event.LoreLevel < ld.config.MinLoreLevel {
 		return false
 	}
-	
+
 	// Check minimum priority
 	if event.Priority < ld.config.MinPriority {
 		return false
 	}
-	
+
 	// Check maximum cursed level
 	if event.CursedLevel > ld.config.MaxCursedLevel {
 		return false
 	}
-	
+
 	// Check if cursed mode is enabled for cursed content
 	if event.Type == "cursed_output" && !ld.config.CursedMode {
 		return false
 	}
-	
+
 	return true
 }
 
@@ -558,16 +558,16 @@ func (ld *LoreDispatcher) applyContextualScaling(baseLoreLevel int, session *Ses
 	if sessionProgress > 1.0 {
 		sessionProgress = 1.0
 	}
-	
+
 	// Apply scaling factor: ramp from base level to max level
 	scalingFactor := 1.0 + (sessionProgress * 2.0) // Scale from 1.0 to 3.0
 	scaledLevel := float64(baseLoreLevel) * scalingFactor
-	
+
 	// Apply session-specific scaling
 	if session.ScalingFactor > 0 {
 		scaledLevel *= session.ScalingFactor
 	}
-	
+
 	// Ensure we stay within bounds
 	result := int(scaledLevel)
 	if result < session.BaseLoreLevel {
@@ -576,14 +576,14 @@ func (ld *LoreDispatcher) applyContextualScaling(baseLoreLevel int, session *Ses
 	if result > session.MaxLoreLevel {
 		result = session.MaxLoreLevel
 	}
-	
+
 	return result
 }
 
 // routeToDiscord sends the event to Discord
 func (ld *LoreDispatcher) routeToDiscord(ctx context.Context, event LoreEvent) {
 	logger := ld.logger.WithField("integration", "discord")
-	
+
 	// Convert lore event to haunted event
 	hauntedEvent := &HauntedEvent{
 		ID:        generateEventID(),
@@ -596,7 +596,7 @@ func (ld *LoreDispatcher) routeToDiscord(ctx context.Context, event LoreEvent) {
 		Sentiment: event.Sentiment,
 		LoreLevel: event.LoreLevel,
 	}
-	
+
 	// Add lore-specific metadata
 	hauntedEvent.Metadata["content"] = event.Content
 	hauntedEvent.Metadata["user_id"] = event.UserID
@@ -604,7 +604,7 @@ func (ld *LoreDispatcher) routeToDiscord(ctx context.Context, event LoreEvent) {
 	hauntedEvent.Metadata["priority"] = strconv.Itoa(event.Priority)
 	hauntedEvent.Metadata["cursed_level"] = strconv.Itoa(event.CursedLevel)
 	hauntedEvent.Metadata["tags"] = strings.Join(event.Tags, ",")
-	
+
 	err := ld.discord.HandleEvent(hauntedEvent)
 	if err != nil {
 		logger.WithError(err).Error("❌ Failed to route event to Discord")
@@ -623,7 +623,7 @@ func (ld *LoreDispatcher) routeToDiscord(ctx context.Context, event LoreEvent) {
 // routeToTikTok sends the event to TikTok
 func (ld *LoreDispatcher) routeToTikTok(ctx context.Context, event LoreEvent) {
 	logger := ld.logger.WithField("integration", "tiktok")
-	
+
 	// Convert lore event to haunted event
 	hauntedEvent := &HauntedEvent{
 		ID:        generateEventID(),
@@ -636,7 +636,7 @@ func (ld *LoreDispatcher) routeToTikTok(ctx context.Context, event LoreEvent) {
 		Sentiment: event.Sentiment,
 		LoreLevel: event.LoreLevel,
 	}
-	
+
 	// Add lore-specific metadata
 	hauntedEvent.Metadata["content"] = event.Content
 	hauntedEvent.Metadata["user_id"] = event.UserID
@@ -644,7 +644,7 @@ func (ld *LoreDispatcher) routeToTikTok(ctx context.Context, event LoreEvent) {
 	hauntedEvent.Metadata["priority"] = strconv.Itoa(event.Priority)
 	hauntedEvent.Metadata["cursed_level"] = strconv.Itoa(event.CursedLevel)
 	hauntedEvent.Metadata["tags"] = strings.Join(event.Tags, ",")
-	
+
 	err := ld.tiktok.HandleEvent(hauntedEvent)
 	if err != nil {
 		logger.WithError(err).Error("❌ Failed to route event to TikTok")
@@ -663,7 +663,7 @@ func (ld *LoreDispatcher) routeToTikTok(ctx context.Context, event LoreEvent) {
 // routeToMarkdown sends the event to Markdown
 func (ld *LoreDispatcher) routeToMarkdown(ctx context.Context, event LoreEvent) {
 	logger := ld.logger.WithField("integration", "markdown")
-	
+
 	// Use the new lore markdown generator
 	if ld.loreMarkdownGenerator != nil {
 		doc, err := ld.loreMarkdownGenerator.GenerateFromLoreEvent(event)
@@ -678,7 +678,7 @@ func (ld *LoreDispatcher) routeToMarkdown(ctx context.Context, event LoreEvent) 
 			}).Info("✅ Lore markdown document generated successfully")
 		}
 	}
-	
+
 	// Also route to the original markdown integration for backward compatibility
 	if ld.markdown != nil {
 		// Convert lore event to haunted event
@@ -693,7 +693,7 @@ func (ld *LoreDispatcher) routeToMarkdown(ctx context.Context, event LoreEvent) 
 			Sentiment: event.Sentiment,
 			LoreLevel: event.LoreLevel,
 		}
-		
+
 		// Add lore-specific metadata
 		hauntedEvent.Metadata["content"] = event.Content
 		hauntedEvent.Metadata["user_id"] = event.UserID
@@ -703,7 +703,7 @@ func (ld *LoreDispatcher) routeToMarkdown(ctx context.Context, event LoreEvent) 
 		hauntedEvent.Metadata["tags"] = strings.Join(event.Tags, ",")
 		hauntedEvent.Metadata["session_id"] = event.SessionID
 		hauntedEvent.Metadata["session_event_count"] = strconv.Itoa(event.SessionEventCount)
-		
+
 		err := ld.markdown.HandleEvent(hauntedEvent)
 		if err != nil {
 			logger.WithError(err).Error("❌ Failed to route event to legacy Markdown")
@@ -711,7 +711,7 @@ func (ld *LoreDispatcher) routeToMarkdown(ctx context.Context, event LoreEvent) 
 			logger.Debug("✅ Event routed to legacy Markdown successfully")
 		}
 	}
-	
+
 	// Update stats
 	ld.stats.mu.Lock()
 	ld.stats.SuccessfulDispatches++
@@ -722,7 +722,7 @@ func (ld *LoreDispatcher) routeToMarkdown(ctx context.Context, event LoreEvent) 
 // routeToN8N sends the event to n8n
 func (ld *LoreDispatcher) routeToN8N(ctx context.Context, event LoreEvent) {
 	logger := ld.logger.WithField("integration", "n8n")
-	
+
 	// Convert lore event to haunted event
 	hauntedEvent := &HauntedEvent{
 		ID:        generateEventID(),
@@ -735,7 +735,7 @@ func (ld *LoreDispatcher) routeToN8N(ctx context.Context, event LoreEvent) {
 		Sentiment: event.Sentiment,
 		LoreLevel: event.LoreLevel,
 	}
-	
+
 	// Add lore-specific metadata
 	hauntedEvent.Metadata["content"] = event.Content
 	hauntedEvent.Metadata["user_id"] = event.UserID
@@ -743,7 +743,7 @@ func (ld *LoreDispatcher) routeToN8N(ctx context.Context, event LoreEvent) {
 	hauntedEvent.Metadata["priority"] = strconv.Itoa(event.Priority)
 	hauntedEvent.Metadata["cursed_level"] = strconv.Itoa(event.CursedLevel)
 	hauntedEvent.Metadata["tags"] = strings.Join(event.Tags, ",")
-	
+
 	err := ld.n8n.HandleEvent(hauntedEvent)
 	if err != nil {
 		logger.WithError(err).Error("❌ Failed to route event to n8n")
@@ -764,11 +764,11 @@ func (ld *LoreDispatcher) validateEvent(event LoreEvent) error {
 	if event.Type == "" {
 		return errors.New("event type is required")
 	}
-	
+
 	if event.Content == "" {
 		return errors.New("event content is required")
 	}
-	
+
 	validTypes := []string{"lore_response", "cursed_output", "reactive_dialogue"}
 	isValid := false
 	for _, validType := range validTypes {
@@ -777,27 +777,27 @@ func (ld *LoreDispatcher) validateEvent(event LoreEvent) error {
 			break
 		}
 	}
-	
+
 	if !isValid {
 		return errors.Errorf("invalid event type: %s", event.Type)
 	}
-	
+
 	if event.Priority < 1 || event.Priority > 10 {
 		return errors.New("priority must be between 1 and 10")
 	}
-	
+
 	if event.LoreLevel < 1 || event.LoreLevel > 10 {
 		return errors.New("lore level must be between 1 and 10")
 	}
-	
+
 	if event.CursedLevel < 1 || event.CursedLevel > 10 {
 		return errors.New("cursed level must be between 1 and 10")
 	}
-	
+
 	if event.Sentiment < -1 || event.Sentiment > 1 {
 		return errors.New("sentiment must be between -1 and 1")
 	}
-	
+
 	return nil
 }
 
@@ -805,7 +805,7 @@ func (ld *LoreDispatcher) validateEvent(event LoreEvent) error {
 func (ld *LoreDispatcher) GetStats() *DispatcherStats {
 	ld.stats.mu.RLock()
 	defer ld.stats.mu.RUnlock()
-	
+
 	// Return a copy to avoid race conditions
 	return &DispatcherStats{
 		TotalEvents:          ld.stats.TotalEvents,
@@ -874,13 +874,13 @@ func NewSessionManager(maxSessions int, sessionTimeout time.Duration, logger *lo
 func (sm *SessionManager) CreateOrGetSession(sessionID, userID, channelID string) *SessionState {
 	sm.mutex.Lock()
 	defer sm.mutex.Unlock()
-	
+
 	// Check if session exists
 	if session, exists := sm.sessions[sessionID]; exists {
 		session.LastActivity = time.Now()
 		return session
 	}
-	
+
 	// Create new session
 	session := &SessionState{
 		SessionID:     sessionID,
@@ -896,19 +896,19 @@ func (sm *SessionManager) CreateOrGetSession(sessionID, userID, channelID string
 		Metadata:      make(map[string]interface{}),
 		Active:        true,
 	}
-	
+
 	// Check if we need to evict old sessions
 	if len(sm.sessions) >= sm.maxSessions {
 		sm.evictOldestSession()
 	}
-	
+
 	sm.sessions[sessionID] = session
 	sm.logger.WithFields(logrus.Fields{
 		"session_id": sessionID,
 		"user_id":    userID,
 		"channel_id": channelID,
 	}).Info("Created new lore session")
-	
+
 	return session
 }
 
@@ -916,34 +916,34 @@ func (sm *SessionManager) CreateOrGetSession(sessionID, userID, channelID string
 func (sm *SessionManager) UpdateSession(sessionID string, event LoreEvent) {
 	sm.mutex.Lock()
 	defer sm.mutex.Unlock()
-	
+
 	session, exists := sm.sessions[sessionID]
 	if !exists {
 		sm.logger.WithField("session_id", sessionID).Warn("Attempted to update non-existent session")
 		return
 	}
-	
+
 	session.LastActivity = time.Now()
 	session.EventCount++
 	session.LoreEvents = append(session.LoreEvents, event)
-	
+
 	// Apply contextual scaling - ramp from base level to max level
 	sessionProgress := float64(session.EventCount) / 20.0 // Scale over 20 events
 	if sessionProgress > 1.0 {
 		sessionProgress = 1.0
 	}
-	
+
 	session.ScalingFactor = 1.0 + sessionProgress*2.0 // Scale from 1.0 to 3.0
-	
+
 	// Keep only last 50 events per session to prevent memory bloat
 	if len(session.LoreEvents) > 50 {
 		session.LoreEvents = session.LoreEvents[len(session.LoreEvents)-50:]
 	}
-	
+
 	sm.logger.WithFields(logrus.Fields{
-		"session_id":      sessionID,
-		"event_count":     session.EventCount,
-		"scaling_factor":  session.ScalingFactor,
+		"session_id":       sessionID,
+		"event_count":      session.EventCount,
+		"scaling_factor":   session.ScalingFactor,
 		"session_progress": sessionProgress,
 	}).Debug("Updated session with new event")
 }
@@ -952,7 +952,7 @@ func (sm *SessionManager) UpdateSession(sessionID string, event LoreEvent) {
 func (sm *SessionManager) GetSession(sessionID string) (*SessionState, bool) {
 	sm.mutex.RLock()
 	defer sm.mutex.RUnlock()
-	
+
 	session, exists := sm.sessions[sessionID]
 	return session, exists
 }
@@ -961,7 +961,7 @@ func (sm *SessionManager) GetSession(sessionID string) (*SessionState, bool) {
 func (sm *SessionManager) GetAllSessions() map[string]*SessionState {
 	sm.mutex.RLock()
 	defer sm.mutex.RUnlock()
-	
+
 	result := make(map[string]*SessionState)
 	for id, session := range sm.sessions {
 		result[id] = session
@@ -973,16 +973,16 @@ func (sm *SessionManager) GetAllSessions() map[string]*SessionState {
 func (sm *SessionManager) CleanupExpiredSessions() {
 	sm.mutex.Lock()
 	defer sm.mutex.Unlock()
-	
+
 	cutoff := time.Now().Add(-sm.sessionTimeout)
 	toDelete := make([]string, 0)
-	
+
 	for sessionID, session := range sm.sessions {
 		if session.LastActivity.Before(cutoff) {
 			toDelete = append(toDelete, sessionID)
 		}
 	}
-	
+
 	for _, sessionID := range toDelete {
 		delete(sm.sessions, sessionID)
 		sm.logger.WithField("session_id", sessionID).Info("Cleaned up expired session")
@@ -993,14 +993,14 @@ func (sm *SessionManager) CleanupExpiredSessions() {
 func (sm *SessionManager) evictOldestSession() {
 	var oldestID string
 	var oldestTime time.Time
-	
+
 	for sessionID, session := range sm.sessions {
 		if oldestID == "" || session.LastActivity.Before(oldestTime) {
 			oldestID = sessionID
 			oldestTime = session.LastActivity
 		}
 	}
-	
+
 	if oldestID != "" {
 		delete(sm.sessions, oldestID)
 		sm.logger.WithField("session_id", oldestID).Info("Evicted oldest session")
@@ -1011,33 +1011,33 @@ func (sm *SessionManager) evictOldestSession() {
 func (sm *SessionManager) GetSessionStats() map[string]interface{} {
 	sm.mutex.RLock()
 	defer sm.mutex.RUnlock()
-	
+
 	stats := map[string]interface{}{
-		"total_sessions":     len(sm.sessions),
-		"active_sessions":    0,
-		"total_events":       0,
-		"average_events":     0.0,
-		"session_timeout":    sm.sessionTimeout.String(),
-		"max_sessions":       sm.maxSessions,
+		"total_sessions":  len(sm.sessions),
+		"active_sessions": 0,
+		"total_events":    0,
+		"average_events":  0.0,
+		"session_timeout": sm.sessionTimeout.String(),
+		"max_sessions":    sm.maxSessions,
 	}
-	
+
 	totalEvents := 0
 	activeSessions := 0
-	
+
 	for _, session := range sm.sessions {
 		if session.Active {
 			activeSessions++
 		}
 		totalEvents += session.EventCount
 	}
-	
+
 	stats["active_sessions"] = activeSessions
 	stats["total_events"] = totalEvents
-	
+
 	if len(sm.sessions) > 0 {
 		stats["average_events"] = float64(totalEvents) / float64(len(sm.sessions))
 	}
-	
+
 	return stats
 }
 

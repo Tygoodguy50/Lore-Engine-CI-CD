@@ -13,14 +13,14 @@ import (
 
 // 🧠 N8nLangChain - Agentic behavior and ARG automation
 type N8nLangChain struct {
-	logger         *logrus.Logger
-	n8nWebhookURL  string
-	langChainURL   string
-	apiKey         string
-	healthy        bool
-	agentMode      bool
-	argEnabled     bool
-	workflowID     string
+	logger        *logrus.Logger
+	n8nWebhookURL string
+	langChainURL  string
+	apiKey        string
+	healthy       bool
+	agentMode     bool
+	argEnabled    bool
+	workflowID    string
 }
 
 // NewN8nLangChain creates a new n8n/LangChain integration
@@ -114,10 +114,10 @@ func (nl *N8nLangChain) handleAgenticBehavior(event *HauntedEvent) error {
 
 	// Create agentic workflow payload
 	payload := map[string]interface{}{
-		"type":       "agentic_behavior",
-		"behavior":   behavior,
-		"cursed":     event.Cursed,
-		"timestamp":  event.Timestamp.Format(time.RFC3339),
+		"type":      "agentic_behavior",
+		"behavior":  behavior,
+		"cursed":    event.Cursed,
+		"timestamp": event.Timestamp.Format(time.RFC3339),
 		"agent_config": map[string]interface{}{
 			"reasoning_mode": nl.getReasoningMode(event.Cursed),
 			"creativity":     nl.getCreativityLevel(event.Cursed),
@@ -186,9 +186,9 @@ func (nl *N8nLangChain) handleWorkflowTrigger(event *HauntedEvent) error {
 		"cursed":      event.Cursed,
 		"timestamp":   event.Timestamp.Format(time.RFC3339),
 		"execution_context": map[string]interface{}{
-			"priority":     nl.getPriority(event.Cursed),
-			"timeout":      nl.getTimeout(event.Type),
-			"retry_count":  nl.getRetryCount(event.Cursed),
+			"priority":    nl.getPriority(event.Cursed),
+			"timeout":     nl.getTimeout(event.Type),
+			"retry_count": nl.getRetryCount(event.Cursed),
 		},
 		"event_data": event.Payload,
 	}
@@ -573,9 +573,9 @@ func (nl *N8nLangChain) getInputVariables(event *HauntedEvent) []string {
 
 func (nl *N8nLangChain) getMemoryConfig(cursed bool) map[string]interface{} {
 	return map[string]interface{}{
-		"type":     "conversation_buffer",
-		"k":        10,
-		"cursed":   cursed,
+		"type":   "conversation_buffer",
+		"k":      10,
+		"cursed": cursed,
 	}
 }
 
