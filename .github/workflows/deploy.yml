@@ -14,6 +14,9 @@ env:
   GO_VERSION: '1.21'
   BAZEL_VERSION: '7.0.0'
   CACHE_ENABLED: 'false'
+  ACTIONS_CACHE_URL: ''
+  ACTIONS_RUNTIME_URL: ''
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   # Build and test the application
@@ -45,10 +48,31 @@ jobs:
         echo "Available disk space: $(df -h . | tail -1)"
       continue-on-error: true
 
-    - name: 🔧 Setup Bazel
-      uses: bazelbuild/setup-bazelisk@v2
-      with:
-        bazelisk-version: 1.20.0
+    - name: 🔧 Setup Bazel (Manual installation to avoid cache issues)
+      run: |
+        echo "Installing Bazelisk manually to avoid cache service issues..."
+        
+        # Create bazelisk directory
+        mkdir -p ~/.local/bin
+        
+        # Download bazelisk directly
+        BAZELISK_VERSION="1.20.0"
+        BAZELISK_URL="https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELISK_VERSION}/bazelisk-linux-amd64"
+        
+        echo "Downloading bazelisk from: $BAZELISK_URL"
+        curl -L -o ~/.local/bin/bazelisk "$BAZELISK_URL"
+        chmod +x ~/.local/bin/bazelisk
+        
+        # Create bazel symlink
+        ln -sf ~/.local/bin/bazelisk ~/.local/bin/bazel
+        
+        # Add to PATH
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+        
+        # Verify installation
+        ~/.local/bin/bazelisk version || echo "Bazelisk installed successfully"
+        
+        echo "Bazelisk manual installation complete"
 
     - name: 🧹 Clear all Bazel cache completely and configure cache-free environment
       run: |
@@ -238,10 +262,31 @@ jobs:
     - name: 📥 Checkout code
       uses: actions/checkout@v4
 
-    - name: 🔧 Setup Bazel
-      uses: bazelbuild/setup-bazelisk@v2
-      with:
-        bazelisk-version: 1.20.0
+    - name: 🔧 Setup Bazel (Manual installation to avoid cache issues)
+      run: |
+        echo "Installing Bazelisk manually to avoid cache service issues..."
+        
+        # Create bazelisk directory
+        mkdir -p ~/.local/bin
+        
+        # Download bazelisk directly
+        BAZELISK_VERSION="1.20.0"
+        BAZELISK_URL="https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELISK_VERSION}/bazelisk-linux-amd64"
+        
+        echo "Downloading bazelisk from: $BAZELISK_URL"
+        curl -L -o ~/.local/bin/bazelisk "$BAZELISK_URL"
+        chmod +x ~/.local/bin/bazelisk
+        
+        # Create bazel symlink
+        ln -sf ~/.local/bin/bazelisk ~/.local/bin/bazel
+        
+        # Add to PATH
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+        
+        # Verify installation
+        ~/.local/bin/bazelisk version || echo "Bazelisk installed successfully"
+        
+        echo "Bazelisk manual installation complete"
 
     - name: 🔨 Build for staging
       run: |
@@ -327,10 +372,31 @@ jobs:
     - name: 📥 Checkout code
       uses: actions/checkout@v4
 
-    - name: 🔧 Setup Bazel
-      uses: bazelbuild/setup-bazelisk@v2
-      with:
-        bazelisk-version: 1.20.0
+    - name: 🔧 Setup Bazel (Manual installation to avoid cache issues)
+      run: |
+        echo "Installing Bazelisk manually to avoid cache service issues..."
+        
+        # Create bazelisk directory
+        mkdir -p ~/.local/bin
+        
+        # Download bazelisk directly
+        BAZELISK_VERSION="1.20.0"
+        BAZELISK_URL="https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELISK_VERSION}/bazelisk-linux-amd64"
+        
+        echo "Downloading bazelisk from: $BAZELISK_URL"
+        curl -L -o ~/.local/bin/bazelisk "$BAZELISK_URL"
+        chmod +x ~/.local/bin/bazelisk
+        
+        # Create bazel symlink
+        ln -sf ~/.local/bin/bazelisk ~/.local/bin/bazel
+        
+        # Add to PATH
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+        
+        # Verify installation
+        ~/.local/bin/bazelisk version || echo "Bazelisk installed successfully"
+        
+        echo "Bazelisk manual installation complete"
 
     - name: 🔨 Build for production
       run: |
