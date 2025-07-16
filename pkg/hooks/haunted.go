@@ -27,28 +27,28 @@ type Integration interface {
 
 // 🎭 HauntedEvent - Core event structure for all haunted interactions
 type HauntedEvent struct {
-	ID          string                 `json:"id"`
-	Type        string                 `json:"type"`        // "lore", "gear_drop", "sentiment", "viral", "arg"
-	Source      string                 `json:"source"`      // "discord", "tiktok", "markdown", "n8n"
-	Timestamp   time.Time              `json:"timestamp"`
-	Payload     map[string]interface{} `json:"payload"`
-	Metadata    map[string]string      `json:"metadata"`
-	Cursed      bool                   `json:"cursed"`      // 🔮 Marks events as cursed/haunted
-	Sentiment   float64                `json:"sentiment"`   // -1.0 to 1.0
-	LoreLevel   int                    `json:"lore_level"`  // 0-10 depth of lore
+	ID        string                 `json:"id"`
+	Type      string                 `json:"type"`   // "lore", "gear_drop", "sentiment", "viral", "arg"
+	Source    string                 `json:"source"` // "discord", "tiktok", "markdown", "n8n"
+	Timestamp time.Time              `json:"timestamp"`
+	Payload   map[string]interface{} `json:"payload"`
+	Metadata  map[string]string      `json:"metadata"`
+	Cursed    bool                   `json:"cursed"`     // 🔮 Marks events as cursed/haunted
+	Sentiment float64                `json:"sentiment"`  // -1.0 to 1.0
+	LoreLevel int                    `json:"lore_level"` // 0-10 depth of lore
 }
 
 // 🎯 LoreTrigger - Defines conditions for haunted responses
 type LoreTrigger struct {
-	ID          string   `json:"id"`
-	Name        string   `json:"name"`
-	Keywords    []string `json:"keywords"`
-	Patterns    []string `json:"patterns"`
+	ID           string   `json:"id"`
+	Name         string   `json:"name"`
+	Keywords     []string `json:"keywords"`
+	Patterns     []string `json:"patterns"`
 	MinSentiment float64  `json:"min_sentiment"`
 	MaxSentiment float64  `json:"max_sentiment"`
-	LoreLevel   int      `json:"lore_level"`
-	Response    string   `json:"response"`
-	Cursed      bool     `json:"cursed"`
+	LoreLevel    int      `json:"lore_level"`
+	Response     string   `json:"response"`
+	Cursed       bool     `json:"cursed"`
 }
 
 // NewHauntedHooks creates the central haunted system

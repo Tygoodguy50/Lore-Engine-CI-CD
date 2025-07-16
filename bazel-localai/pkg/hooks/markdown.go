@@ -13,21 +13,21 @@ import (
 
 // Constants for markdown generation
 const (
-	dateFormat     = "2006-01-02"
-	timeFormat     = "2006-01-02 15:04:05"
-	fileTimeFormat = "2006-01-02_15-04-05"
+	dateFormat      = "2006-01-02"
+	timeFormat      = "2006-01-02 15:04:05"
+	fileTimeFormat  = "2006-01-02_15-04-05"
 	generatedHeader = "**Generated:** %s\n"
 	eventIDHeader   = "**Event ID:** %s\n\n"
 )
 
 // 📝 MarkdownInjector - Lore docs and cursed outputs
 type MarkdownInjector struct {
-	logger       *logrus.Logger
-	outputDir    string
-	templateDir  string
-	healthy      bool
-	autoCommit   bool
-	gitRepo      string
+	logger      *logrus.Logger
+	outputDir   string
+	templateDir string
+	healthy     bool
+	autoCommit  bool
+	gitRepo     string
 }
 
 // NewMarkdownInjector creates a new Markdown injector integration
@@ -115,14 +115,14 @@ func (mi *MarkdownInjector) handleLoreDocument(event *HauntedEvent) error {
 	}
 
 	query, _ := event.Payload["query"].(string)
-	
+
 	// Generate lore document
 	content := mi.generateLoreDocument(response, query, event)
-	
+
 	// Create filename
 	filename := mi.generateLoreFilename(query, event.Cursed)
 	filepath := filepath.Join(mi.outputDir, "lore", filename)
-	
+
 	return mi.writeMarkdownFile(filepath, content, event)
 }
 
@@ -136,10 +136,10 @@ func (mi *MarkdownInjector) handleCursedOutput(event *HauntedEvent) error {
 	}
 
 	content := mi.generateCursedDocument(output, event)
-	
+
 	filename := fmt.Sprintf("cursed_%s.md", event.Timestamp.Format(fileTimeFormat))
 	filepath := filepath.Join(mi.outputDir, "cursed", filename)
-	
+
 	return mi.writeMarkdownFile(filepath, content, event)
 }
 
@@ -153,10 +153,10 @@ func (mi *MarkdownInjector) handleSessionSummary(event *HauntedEvent) error {
 	}
 
 	content := mi.generateSessionDocument(summary, event)
-	
+
 	filename := fmt.Sprintf("session_%s.md", event.Timestamp.Format(dateFormat))
 	filepath := filepath.Join(mi.outputDir, "sessions", filename)
-	
+
 	return mi.writeMarkdownFile(filepath, content, event)
 }
 
@@ -170,10 +170,10 @@ func (mi *MarkdownInjector) handleDebugArtifact(event *HauntedEvent) error {
 	}
 
 	content := mi.generateDebugDocument(artifact, event)
-	
+
 	filename := fmt.Sprintf("debug_%s.md", event.Timestamp.Format(fileTimeFormat))
 	filepath := filepath.Join(mi.outputDir, "debug", filename)
-	
+
 	return mi.writeMarkdownFile(filepath, content, event)
 }
 
@@ -187,10 +187,10 @@ func (mi *MarkdownInjector) handleHauntedChronicle(event *HauntedEvent) error {
 	}
 
 	content := mi.generateChronicleDocument(chronicle, event)
-	
+
 	filename := fmt.Sprintf("chronicle_%s.md", event.Timestamp.Format(dateFormat))
 	filepath := filepath.Join(mi.outputDir, "chronicles", filename)
-	
+
 	return mi.writeMarkdownFile(filepath, content, event)
 }
 
@@ -220,7 +220,7 @@ func (mi *MarkdownInjector) writeMarkdownFile(filePath string, content string, e
 // 📜 generateLoreDocument creates lore documentation
 func (mi *MarkdownInjector) generateLoreDocument(response, query string, event *HauntedEvent) string {
 	var content strings.Builder
-	
+
 	// Header
 	content.WriteString("# 📜 Lore Document\n\n")
 	content.WriteString(fmt.Sprintf(generatedHeader, event.Timestamp.Format(timeFormat)))
@@ -262,7 +262,7 @@ func (mi *MarkdownInjector) generateLoreDocument(response, query string, event *
 // 🔮 generateCursedDocument creates cursed output documentation
 func (mi *MarkdownInjector) generateCursedDocument(output string, event *HauntedEvent) string {
 	var content strings.Builder
-	
+
 	content.WriteString("# 🔮 Cursed Output\n\n")
 	content.WriteString(fmt.Sprintf(generatedHeader, event.Timestamp.Format(timeFormat)))
 	content.WriteString(fmt.Sprintf(eventIDHeader, event.ID))
@@ -294,7 +294,7 @@ func (mi *MarkdownInjector) generateCursedDocument(output string, event *Haunted
 // 📊 generateSessionDocument creates session summary documentation
 func (mi *MarkdownInjector) generateSessionDocument(summary string, event *HauntedEvent) string {
 	var content strings.Builder
-	
+
 	content.WriteString("# 📊 Session Summary\n\n")
 	content.WriteString(fmt.Sprintf("**Date:** %s\n", event.Timestamp.Format(dateFormat)))
 	content.WriteString(fmt.Sprintf("**Event ID:** %s\n", event.ID))
@@ -317,7 +317,7 @@ func (mi *MarkdownInjector) generateSessionDocument(summary string, event *Haunt
 // 🐛 generateDebugDocument creates debug artifact documentation
 func (mi *MarkdownInjector) generateDebugDocument(artifact string, event *HauntedEvent) string {
 	var content strings.Builder
-	
+
 	content.WriteString("# 🐛 Debug Artifact\n\n")
 	content.WriteString(fmt.Sprintf(generatedHeader, event.Timestamp.Format(timeFormat)))
 	content.WriteString(fmt.Sprintf(eventIDHeader, event.ID))
@@ -340,7 +340,7 @@ func (mi *MarkdownInjector) generateDebugDocument(artifact string, event *Haunte
 // 🔗 generateChronicleDocument creates haunted chronicle documentation
 func (mi *MarkdownInjector) generateChronicleDocument(chronicle string, event *HauntedEvent) string {
 	var content strings.Builder
-	
+
 	content.WriteString("# 🔗 Haunted Chronicle\n\n")
 	content.WriteString(fmt.Sprintf("**Date:** %s\n", event.Timestamp.Format(dateFormat)))
 	content.WriteString(fmt.Sprintf(eventIDHeader, event.ID))
@@ -368,17 +368,17 @@ func (mi *MarkdownInjector) generateLoreFilename(query string, cursed bool) stri
 	cleaned = strings.ReplaceAll(cleaned, "?", "")
 	cleaned = strings.ReplaceAll(cleaned, "!", "")
 	cleaned = strings.ToLower(cleaned)
-	
+
 	// Limit length
 	if len(cleaned) > 50 {
 		cleaned = cleaned[:50]
 	}
-	
+
 	// Add cursed prefix if needed
 	if cursed {
 		cleaned = "cursed_" + cleaned
 	}
-	
+
 	// Add timestamp and extension
 	timestamp := time.Now().Format(fileTimeFormat)
 	return fmt.Sprintf("%s_%s.md", cleaned, timestamp)
@@ -392,6 +392,6 @@ func (mi *MarkdownInjector) commitChanges(filepath string, event *HauntedEvent) 
 		"file":     filepath,
 		"event_id": event.ID,
 	}).Info("🔀 Auto-commit enabled (placeholder)")
-	
+
 	return nil
 }

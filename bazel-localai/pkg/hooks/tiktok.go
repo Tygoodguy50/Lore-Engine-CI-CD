@@ -13,10 +13,10 @@ import (
 
 // 📦 TikTokWebhook - Viral rotations and reactive dialogue
 type TikTokWebhook struct {
-	logger       *logrus.Logger
-	webhookURL   string
-	accessToken  string
-	healthy      bool
+	logger         *logrus.Logger
+	webhookURL     string
+	accessToken    string
+	healthy        bool
 	viralThreshold float64
 }
 
@@ -125,7 +125,7 @@ func (tw *TikTokWebhook) handleReactiveDialogue(event *HauntedEvent) error {
 	response := tw.generateReactiveResponse(userMessage, event.Cursed, event.Sentiment)
 
 	dialogue := map[string]interface{}{
-		"type":        "reactive_dialogue",
+		"type":         "reactive_dialogue",
 		"user_message": userMessage,
 		"ai_response":  response,
 		"sentiment":    event.Sentiment,
@@ -148,13 +148,13 @@ func (tw *TikTokWebhook) handleLoreResponse(event *HauntedEvent) error {
 
 	// Create TikTok-friendly lore content
 	loreContent := map[string]interface{}{
-		"type":        "lore_content",
-		"story":       response,
-		"cursed":      event.Cursed,
-		"lore_level":  event.LoreLevel,
-		"timestamp":   event.Timestamp.Format(time.RFC3339),
-		"format":      tw.formatForTikTok(response),
-		"duration":    tw.calculateDuration(response),
+		"type":       "lore_content",
+		"story":      response,
+		"cursed":     event.Cursed,
+		"lore_level": event.LoreLevel,
+		"timestamp":  event.Timestamp.Format(time.RFC3339),
+		"format":     tw.formatForTikTok(response),
+		"duration":   tw.calculateDuration(response),
 	}
 
 	return tw.sendToTikTok(loreContent)
@@ -165,13 +165,13 @@ func (tw *TikTokWebhook) handleSentimentReaction(event *HauntedEvent) error {
 	tw.logger.Info("😊 Processing sentiment reaction for TikTok")
 
 	reaction := map[string]interface{}{
-		"type":       "sentiment_reaction",
-		"sentiment":  event.Sentiment,
-		"cursed":     event.Cursed,
-		"reaction":   tw.getSentimentReaction(event.Sentiment, event.Cursed),
-		"timestamp":  event.Timestamp.Format(time.RFC3339),
-		"filters":    tw.getSentimentFilters(event.Sentiment),
-		"sounds":     tw.getSentimentSounds(event.Sentiment, event.Cursed),
+		"type":      "sentiment_reaction",
+		"sentiment": event.Sentiment,
+		"cursed":    event.Cursed,
+		"reaction":  tw.getSentimentReaction(event.Sentiment, event.Cursed),
+		"timestamp": event.Timestamp.Format(time.RFC3339),
+		"filters":   tw.getSentimentFilters(event.Sentiment),
+		"sounds":    tw.getSentimentSounds(event.Sentiment, event.Cursed),
 	}
 
 	return tw.sendToTikTok(reaction)
@@ -217,7 +217,7 @@ func (tw *TikTokWebhook) sendToTikTok(payload map[string]interface{}) error {
 // 🏷️ generateHashtags creates hashtags for viral content
 func (tw *TikTokWebhook) generateHashtags(content string, cursed bool) []string {
 	baseHashtags := []string{"#AI", "#LocalAI", "#Tech", "#Viral"}
-	
+
 	if cursed {
 		baseHashtags = append(baseHashtags, "#Cursed", "#Haunted", "#Dark", "#Mystery")
 	} else {
@@ -258,19 +258,19 @@ func (tw *TikTokWebhook) generateReactiveResponse(message string, cursed bool, s
 // 📊 calculateEngagement estimates engagement potential
 func (tw *TikTokWebhook) calculateEngagement(event *HauntedEvent) float64 {
 	base := 0.5
-	
+
 	if event.Cursed {
 		base += 0.3 // Cursed content tends to be more engaging
 	}
-	
+
 	if event.Sentiment > 0.5 || event.Sentiment < -0.5 {
 		base += 0.2 // Strong sentiment drives engagement
 	}
-	
+
 	if event.LoreLevel > 5 {
 		base += 0.1 // Deep lore attracts dedicated followers
 	}
-	
+
 	return base
 }
 
@@ -290,14 +290,14 @@ func (tw *TikTokWebhook) calculateDuration(content string) int {
 	// Rough estimate: 3 seconds per sentence
 	sentences := strings.Count(content, ".") + strings.Count(content, "!") + strings.Count(content, "?")
 	duration := sentences * 3
-	
+
 	// Minimum 15 seconds, maximum 60 seconds
 	if duration < 15 {
 		duration = 15
 	} else if duration > 60 {
 		duration = 60
 	}
-	
+
 	return duration
 }
 
@@ -306,13 +306,13 @@ func (tw *TikTokWebhook) getSentimentReaction(sentiment float64, cursed bool) st
 	if cursed {
 		return "dark_energy"
 	}
-	
+
 	if sentiment > 0.5 {
 		return "positive_energy"
 	} else if sentiment < -0.5 {
 		return "concerned_energy"
 	}
-	
+
 	return "neutral_energy"
 }
 
@@ -323,7 +323,7 @@ func (tw *TikTokWebhook) getSentimentFilters(sentiment float64) []string {
 	} else if sentiment < -0.5 {
 		return []string{"desaturate", "cool_tones", "vignette"}
 	}
-	
+
 	return []string{"neutral", "balance"}
 }
 
@@ -332,12 +332,12 @@ func (tw *TikTokWebhook) getSentimentSounds(sentiment float64, cursed bool) []st
 	if cursed {
 		return []string{"dark_ambient", "whispers", "eerie_tones"}
 	}
-	
+
 	if sentiment > 0.5 {
 		return []string{"upbeat", "energetic", "positive_vibes"}
 	} else if sentiment < -0.5 {
 		return []string{"calm", "soothing", "reflective"}
 	}
-	
+
 	return []string{"neutral", "ambient", "tech_sounds"}
 }

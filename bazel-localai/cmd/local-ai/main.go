@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	
+
 	"github.com/mudler/LocalAI/pkg/hooks"
 )
 
@@ -34,25 +34,25 @@ func runServer() {
 
 	// 🕸️ Initialize haunted hooks system
 	hauntedHooks := hooks.NewHauntedHooks()
-	
+
 	// Register all integrations
 	discordBot := hooks.NewDiscordBot()
 	tiktokWebhook := hooks.NewTikTokWebhook()
 	markdownInjector := hooks.NewMarkdownInjector()
 	n8nLangChain := hooks.NewN8nLangChain()
-	
+
 	if err := hauntedHooks.RegisterIntegration(discordBot); err != nil {
 		logrus.WithError(err).Warn("Failed to register Discord integration")
 	}
-	
+
 	if err := hauntedHooks.RegisterIntegration(tiktokWebhook); err != nil {
 		logrus.WithError(err).Warn("Failed to register TikTok integration")
 	}
-	
+
 	if err := hauntedHooks.RegisterIntegration(markdownInjector); err != nil {
 		logrus.WithError(err).Warn("Failed to register Markdown integration")
 	}
-	
+
 	if err := hauntedHooks.RegisterIntegration(n8nLangChain); err != nil {
 		logrus.WithError(err).Warn("Failed to register n8n/LangChain integration")
 	}
@@ -60,9 +60,9 @@ func runServer() {
 	// Initialize integrations with configuration
 	integrationConfigs := map[string]map[string]interface{}{
 		"discord": {
-			"token":       os.Getenv("DISCORD_TOKEN"),
-			"channel_id":  os.Getenv("DISCORD_CHANNEL_ID"),
-			"guild_id":    os.Getenv("DISCORD_GUILD_ID"),
+			"token":      os.Getenv("DISCORD_TOKEN"),
+			"channel_id": os.Getenv("DISCORD_CHANNEL_ID"),
+			"guild_id":   os.Getenv("DISCORD_GUILD_ID"),
 		},
 		"tiktok": {
 			"webhook_url":     os.Getenv("TIKTOK_WEBHOOK_URL"),
@@ -70,9 +70,9 @@ func runServer() {
 			"viral_threshold": 0.8,
 		},
 		"markdown": {
-			"output_dir":   "./docs/haunted",
-			"auto_commit":  os.Getenv("MARKDOWN_AUTO_COMMIT") == "true",
-			"git_repo":     os.Getenv("MARKDOWN_GIT_REPO"),
+			"output_dir":  "./docs/haunted",
+			"auto_commit": os.Getenv("MARKDOWN_AUTO_COMMIT") == "true",
+			"git_repo":    os.Getenv("MARKDOWN_GIT_REPO"),
 		},
 		"n8n-langchain": {
 			"n8n_webhook_url": os.Getenv("N8N_WEBHOOK_URL"),
@@ -161,48 +161,48 @@ func runServer() {
 	// 📊 Lore dispatcher statistics
 	r.GET("/lore/stats", func(c *gin.Context) {
 		stats := loreDispatcher.GetStats()
-		
+
 		// Enhance stats with comprehensive metrics
 		enhancedStats := map[string]interface{}{
 			"dispatcher": stats,
 		}
-		
+
 		// Add live metrics if available
 		if loreDispatcher.GetLiveMetrics() != nil {
 			enhancedStats["live_metrics"] = loreDispatcher.GetLiveMetrics().GetMetrics()
 		}
-		
+
 		// Add conflict detector stats
 		if loreDispatcher.GetConflictDetector() != nil {
 			enhancedStats["conflict_detector"] = loreDispatcher.GetConflictDetector().GetConflictStats()
 		}
-		
+
 		// Add lore looper stats
 		if loreDispatcher.GetLoreLooper() != nil {
 			enhancedStats["lore_looper"] = loreDispatcher.GetLoreLooper().GetLooperStats()
 		}
-		
+
 		// Add markdown generator stats
 		if loreDispatcher.GetMarkdownGenerator() != nil {
 			enhancedStats["markdown_generator"] = loreDispatcher.GetMarkdownGenerator().GetGeneratorStats()
 		}
-		
+
 		c.JSON(200, enhancedStats)
 	})
 
 	// 🎭 Convenience endpoints for specific lore events
 	r.POST("/lore/response", func(c *gin.Context) {
 		var request struct {
-			Content     string                 `json:"content"`
-			UserID      string                 `json:"user_id"`
-			ChannelID   string                 `json:"channel_id"`
-			LoreLevel   int                    `json:"lore_level"`
-			Priority    int                    `json:"priority"`
-			Tags        []string               `json:"tags"`
-			Metadata    map[string]interface{} `json:"metadata"`
-			SessionID   string                 `json:"session_id"`
+			Content   string                 `json:"content"`
+			UserID    string                 `json:"user_id"`
+			ChannelID string                 `json:"channel_id"`
+			LoreLevel int                    `json:"lore_level"`
+			Priority  int                    `json:"priority"`
+			Tags      []string               `json:"tags"`
+			Metadata  map[string]interface{} `json:"metadata"`
+			SessionID string                 `json:"session_id"`
 		}
-		
+
 		if err := c.ShouldBindJSON(&request); err != nil {
 			c.JSON(400, gin.H{"error": "Invalid lore response format"})
 			return
@@ -242,7 +242,7 @@ func runServer() {
 			Metadata    map[string]interface{} `json:"metadata"`
 			SessionID   string                 `json:"session_id"`
 		}
-		
+
 		if err := c.ShouldBindJSON(&request); err != nil {
 			c.JSON(400, gin.H{"error": "Invalid cursed output format"})
 			return
@@ -273,16 +273,16 @@ func runServer() {
 
 	r.POST("/lore/reactive", func(c *gin.Context) {
 		var request struct {
-			Content     string                 `json:"content"`
-			UserID      string                 `json:"user_id"`
-			ChannelID   string                 `json:"channel_id"`
-			Priority    int                    `json:"priority"`
-			Sentiment   float64                `json:"sentiment"`
-			Tags        []string               `json:"tags"`
-			Metadata    map[string]interface{} `json:"metadata"`
-			SessionID   string                 `json:"session_id"`
+			Content   string                 `json:"content"`
+			UserID    string                 `json:"user_id"`
+			ChannelID string                 `json:"channel_id"`
+			Priority  int                    `json:"priority"`
+			Sentiment float64                `json:"sentiment"`
+			Tags      []string               `json:"tags"`
+			Metadata  map[string]interface{} `json:"metadata"`
+			SessionID string                 `json:"session_id"`
 		}
-		
+
 		if err := c.ShouldBindJSON(&request); err != nil {
 			c.JSON(400, gin.H{"error": "Invalid reactive dialogue format"})
 			return
@@ -380,20 +380,20 @@ func runServer() {
 			c.JSON(503, gin.H{"error": "Lore markdown generator not available"})
 			return
 		}
-		
+
 		var event hooks.LoreEvent
 		if err := c.ShouldBindJSON(&event); err != nil {
 			c.JSON(400, gin.H{"error": "Invalid lore event format"})
 			return
 		}
-		
+
 		doc, err := loreDispatcher.GetLoreMarkdownGenerator().GenerateFromLoreEvent(event)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to generate markdown document")
 			c.JSON(500, gin.H{"error": "Failed to generate markdown document"})
 			return
 		}
-		
+
 		c.JSON(200, gin.H{
 			"status":   "Markdown document generated",
 			"document": doc,
@@ -406,23 +406,23 @@ func runServer() {
 			c.JSON(503, gin.H{"error": "Lore conflict detector not available"})
 			return
 		}
-		
+
 		var event hooks.LoreEvent
 		if err := c.ShouldBindJSON(&event); err != nil {
 			c.JSON(400, gin.H{"error": "Invalid lore event format"})
 			return
 		}
-		
+
 		conflictResult, err := loreDispatcher.GetConflictDetector().AnalyzeLoreEvent(event)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to analyze lore event for conflicts")
 			c.JSON(500, gin.H{"error": "Failed to analyze lore event for conflicts"})
 			return
 		}
-		
+
 		c.JSON(200, gin.H{
-			"status":  "Conflict analysis completed",
-			"result":  conflictResult,
+			"status": "Conflict analysis completed",
+			"result": conflictResult,
 		})
 	})
 
@@ -431,7 +431,7 @@ func runServer() {
 			c.JSON(503, gin.H{"error": "Lore conflict detector not available"})
 			return
 		}
-		
+
 		history := loreDispatcher.GetConflictDetector().GetConflictHistory()
 		c.JSON(200, gin.H{"conflicts": history})
 	})
@@ -441,7 +441,7 @@ func runServer() {
 			c.JSON(503, gin.H{"error": "Lore conflict detector not available"})
 			return
 		}
-		
+
 		stats := loreDispatcher.GetConflictDetector().GetConflictStats()
 		c.JSON(200, gin.H{"stats": stats})
 	})
@@ -451,7 +451,7 @@ func runServer() {
 			c.JSON(503, gin.H{"error": "Lore conflict detector not available"})
 			return
 		}
-		
+
 		healthy := loreDispatcher.GetConflictDetector().IsHealthy()
 		c.JSON(200, gin.H{
 			"healthy": healthy,
@@ -465,19 +465,19 @@ func runServer() {
 			c.JSON(503, gin.H{"error": "Interactive lore looper not available"})
 			return
 		}
-		
+
 		var request hooks.TriggerRequest
 		if err := c.ShouldBindJSON(&request); err != nil {
 			c.JSON(400, gin.H{"error": err.Error()})
 			return
 		}
-		
+
 		response, err := loreDispatcher.GetLoreLooper().TriggerLoreReanimation(request)
 		if err != nil {
 			c.JSON(500, gin.H{"error": err.Error()})
 			return
 		}
-		
+
 		c.JSON(200, response)
 	})
 
@@ -486,7 +486,7 @@ func runServer() {
 			c.JSON(503, gin.H{"error": "Interactive lore looper not available"})
 			return
 		}
-		
+
 		fragments := loreDispatcher.GetLoreLooper().GetLoreFragments()
 		c.JSON(200, gin.H{"fragments": fragments})
 	})
@@ -496,7 +496,7 @@ func runServer() {
 			c.JSON(503, gin.H{"error": "Interactive lore looper not available"})
 			return
 		}
-		
+
 		chains := loreDispatcher.GetLoreLooper().GetEvolutionChains()
 		c.JSON(200, gin.H{"chains": chains})
 	})
@@ -506,7 +506,7 @@ func runServer() {
 			c.JSON(503, gin.H{"error": "Interactive lore looper not available"})
 			return
 		}
-		
+
 		loops := loreDispatcher.GetLoreLooper().GetActiveLoops()
 		c.JSON(200, gin.H{"loops": loops})
 	})
@@ -516,14 +516,14 @@ func runServer() {
 			c.JSON(503, gin.H{"error": "Interactive lore looper not available"})
 			return
 		}
-		
+
 		loopID := c.Param("id")
 		loop, err := loreDispatcher.GetLoreLooper().GetLoopStatus(loopID)
 		if err != nil {
 			c.JSON(404, gin.H{"error": err.Error()})
 			return
 		}
-		
+
 		c.JSON(200, gin.H{"loop": loop})
 	})
 
@@ -532,7 +532,7 @@ func runServer() {
 			c.JSON(503, gin.H{"error": "Interactive lore looper not available"})
 			return
 		}
-		
+
 		stats := loreDispatcher.GetLoreLooper().GetLooperStats()
 		c.JSON(200, gin.H{"stats": stats})
 	})
@@ -542,7 +542,7 @@ func runServer() {
 			c.JSON(503, gin.H{"error": "Interactive lore looper not available"})
 			return
 		}
-		
+
 		healthy := loreDispatcher.GetLoreLooper().IsHealthy()
 		c.JSON(200, gin.H{
 			"healthy": healthy,

@@ -10,22 +10,22 @@ import (
 // 🔮 Test the Lore Dispatcher system
 func main() {
 	baseURL := "http://localhost:8081"
-	
+
 	fmt.Println("🕸️ Testing Lore Dispatcher System")
 	fmt.Println("================================")
-	
+
 	// Test 1: Lore Response
 	fmt.Println("\n🎭 Testing Lore Response...")
 	testLoreResponse(baseURL)
-	
+
 	// Test 2: Cursed Output
 	fmt.Println("\n👹 Testing Cursed Output...")
 	testCursedOutput(baseURL)
-	
+
 	// Test 3: Reactive Dialogue
 	fmt.Println("\n💬 Testing Reactive Dialogue...")
 	testReactiveDialogue(baseURL)
-	
+
 	// Test 4: Check dispatcher statistics
 	fmt.Println("\n📊 Checking Dispatcher Statistics...")
 	checkStats(baseURL)
@@ -44,16 +44,16 @@ func testLoreResponse(baseURL string) {
 			"theme":  "cosmic_horror",
 		},
 	}
-	
+
 	jsonData, _ := json.Marshal(payload)
 	resp, err := http.Post(baseURL+"/lore/response", "application/json", bytes.NewBuffer(jsonData))
-	
+
 	if err != nil {
 		fmt.Printf("❌ Error: %v\n", err)
 		return
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode == 200 {
 		fmt.Printf("✅ Lore response dispatched successfully (Status: %d)\n", resp.StatusCode)
 	} else {
@@ -70,21 +70,21 @@ func testCursedOutput(baseURL string) {
 		"priority":     8,
 		"tags":         []string{"cursed", "numbers", "whispers"},
 		"metadata": map[string]interface{}{
-			"source":     "test",
-			"theme":      "numerical_horror",
+			"source":       "test",
+			"theme":        "numerical_horror",
 			"danger_level": "high",
 		},
 	}
-	
+
 	jsonData, _ := json.Marshal(payload)
 	resp, err := http.Post(baseURL+"/lore/cursed", "application/json", bytes.NewBuffer(jsonData))
-	
+
 	if err != nil {
 		fmt.Printf("❌ Error: %v\n", err)
 		return
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode == 200 {
 		fmt.Printf("✅ Cursed output dispatched successfully (Status: %d)\n", resp.StatusCode)
 	} else {
@@ -101,21 +101,21 @@ func testReactiveDialogue(baseURL string) {
 		"sentiment":  -0.7,
 		"tags":       []string{"reactive", "disturbance", "approaching"},
 		"metadata": map[string]interface{}{
-			"source":      "test",
-			"theme":       "digital_horror",
+			"source":       "test",
+			"theme":        "digital_horror",
 			"trigger_type": "presence_detection",
 		},
 	}
-	
+
 	jsonData, _ := json.Marshal(payload)
 	resp, err := http.Post(baseURL+"/lore/reactive", "application/json", bytes.NewBuffer(jsonData))
-	
+
 	if err != nil {
 		fmt.Printf("❌ Error: %v\n", err)
 		return
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode == 200 {
 		fmt.Printf("✅ Reactive dialogue dispatched successfully (Status: %d)\n", resp.StatusCode)
 	} else {
@@ -125,17 +125,17 @@ func testReactiveDialogue(baseURL string) {
 
 func checkStats(baseURL string) {
 	resp, err := http.Get(baseURL + "/lore/stats")
-	
+
 	if err != nil {
 		fmt.Printf("❌ Error: %v\n", err)
 		return
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode == 200 {
 		var stats map[string]interface{}
 		json.NewDecoder(resp.Body).Decode(&stats)
-		
+
 		fmt.Printf("✅ Dispatcher Statistics Retrieved:\n")
 		fmt.Printf("   📊 Total Events: %.0f\n", stats["TotalEvents"])
 		fmt.Printf("   ✅ Successful Dispatches: %.0f\n", stats["SuccessfulDispatches"])
@@ -144,7 +144,7 @@ func checkStats(baseURL string) {
 		fmt.Printf("   🎬 TikTok Dispatches: %.0f\n", stats["TikTokDispatches"])
 		fmt.Printf("   📝 Markdown Dispatches: %.0f\n", stats["MarkdownDispatches"])
 		fmt.Printf("   🔗 n8n Dispatches: %.0f\n", stats["N8NDispatches"])
-		
+
 		if lastEventTime, ok := stats["LastEventTime"].(string); ok {
 			fmt.Printf("   ⏰ Last Event Time: %s\n", lastEventTime)
 		}

@@ -13,34 +13,34 @@ import (
 
 // InteractiveLoreLooper handles re-entrant content for remix, mutation, and escalation
 type InteractiveLoreLooper struct {
-	logger         *logrus.Logger
-	mutex          sync.RWMutex
-	
+	logger *logrus.Logger
+	mutex  sync.RWMutex
+
 	// Lore storage and tracking
 	loreFragments   map[string]*LoreFragment
 	evolutionChains map[string]*EvolutionChain
 	activeLoops     map[string]*ActiveLoop
-	
+
 	// Mutation algorithms
 	mutationRules   []MutationRule
 	remixPatterns   []RemixPattern
 	escalationRules []EscalationRule
-	
+
 	// Platform integrations
 	discordEnabled  bool
 	tiktokEnabled   bool
 	markdownEnabled bool
-	
+
 	// Loop management
-	maxLoopDepth    int
-	loopTimeout     time.Duration
-	cooldownPeriod  time.Duration
-	
+	maxLoopDepth   int
+	loopTimeout    time.Duration
+	cooldownPeriod time.Duration
+
 	// Evolution tracking
-	totalEvolutions int64
-	totalRemixes    int64
+	totalEvolutions  int64
+	totalRemixes     int64
 	totalEscalations int64
-	
+
 	// Context and cancellation
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -128,52 +128,52 @@ type MutationRule struct {
 
 // RemixPattern defines how content should be remixed
 type RemixPattern struct {
-	ID           string                 `json:"id"`
-	Name         string                 `json:"name"`
-	Template     string                 `json:"template"`
-	Variables    []string               `json:"variables"`
-	Complexity   int                    `json:"complexity"`
-	Conditions   map[string]interface{} `json:"conditions"`
-	Enabled      bool                   `json:"enabled"`
+	ID         string                 `json:"id"`
+	Name       string                 `json:"name"`
+	Template   string                 `json:"template"`
+	Variables  []string               `json:"variables"`
+	Complexity int                    `json:"complexity"`
+	Conditions map[string]interface{} `json:"conditions"`
+	Enabled    bool                   `json:"enabled"`
 }
 
 // EscalationRule defines how content should be escalated
 type EscalationRule struct {
-	ID          string                 `json:"id"`
-	Name        string                 `json:"name"`
-	Trigger     string                 `json:"trigger"`
-	Action      string                 `json:"action"`
-	Intensity   int                    `json:"intensity"`
-	Conditions  map[string]interface{} `json:"conditions"`
-	Enabled     bool                   `json:"enabled"`
+	ID         string                 `json:"id"`
+	Name       string                 `json:"name"`
+	Trigger    string                 `json:"trigger"`
+	Action     string                 `json:"action"`
+	Intensity  int                    `json:"intensity"`
+	Conditions map[string]interface{} `json:"conditions"`
+	Enabled    bool                   `json:"enabled"`
 }
 
 // TriggerRequest represents a request to trigger lore reanimation
 type TriggerRequest struct {
-	FragmentID   string                 `json:"fragment_id"`
-	UserID       string                 `json:"user_id"`
-	Platform     string                 `json:"platform"`
-	LoopType     string                 `json:"loop_type"`
-	Iterations   int                    `json:"iterations"`
-	Parameters   map[string]interface{} `json:"parameters"`
-	Constraints  map[string]interface{} `json:"constraints"`
+	FragmentID  string                 `json:"fragment_id"`
+	UserID      string                 `json:"user_id"`
+	Platform    string                 `json:"platform"`
+	LoopType    string                 `json:"loop_type"`
+	Iterations  int                    `json:"iterations"`
+	Parameters  map[string]interface{} `json:"parameters"`
+	Constraints map[string]interface{} `json:"constraints"`
 }
 
 // TriggerResponse represents the response from triggering lore reanimation
 type TriggerResponse struct {
-	LoopID       string                 `json:"loop_id"`
-	FragmentID   string                 `json:"fragment_id"`
-	Status       string                 `json:"status"`
-	Message      string                 `json:"message"`
-	InitialLoop  *ActiveLoop            `json:"initial_loop"`
-	EstimatedTime time.Duration         `json:"estimated_time"`
-	Metadata     map[string]interface{} `json:"metadata"`
+	LoopID        string                 `json:"loop_id"`
+	FragmentID    string                 `json:"fragment_id"`
+	Status        string                 `json:"status"`
+	Message       string                 `json:"message"`
+	InitialLoop   *ActiveLoop            `json:"initial_loop"`
+	EstimatedTime time.Duration          `json:"estimated_time"`
+	Metadata      map[string]interface{} `json:"metadata"`
 }
 
 // NewInteractiveLoreLooper creates a new interactive lore looper
 func NewInteractiveLoreLooper(logger *logrus.Logger) *InteractiveLoreLooper {
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	ill := &InteractiveLoreLooper{
 		logger:          logger,
 		loreFragments:   make(map[string]*LoreFragment),
@@ -188,13 +188,13 @@ func NewInteractiveLoreLooper(logger *logrus.Logger) *InteractiveLoreLooper {
 		ctx:             ctx,
 		cancel:          cancel,
 	}
-	
+
 	// Initialize default rules and patterns
 	ill.initializeDefaultRules()
-	
+
 	// Start background loop management
 	go ill.manageActiveLoops()
-	
+
 	return ill
 }
 
@@ -202,35 +202,35 @@ func NewInteractiveLoreLooper(logger *logrus.Logger) *InteractiveLoreLooper {
 func (ill *InteractiveLoreLooper) Initialize(config map[string]interface{}) error {
 	ill.mutex.Lock()
 	defer ill.mutex.Unlock()
-	
+
 	if enabled, ok := config["discord_enabled"].(bool); ok {
 		ill.discordEnabled = enabled
 	}
-	
+
 	if enabled, ok := config["tiktok_enabled"].(bool); ok {
 		ill.tiktokEnabled = enabled
 	}
-	
+
 	if enabled, ok := config["markdown_enabled"].(bool); ok {
 		ill.markdownEnabled = enabled
 	}
-	
+
 	if maxDepth, ok := config["max_loop_depth"].(int); ok {
 		ill.maxLoopDepth = maxDepth
 	}
-	
+
 	if timeout, ok := config["loop_timeout"].(string); ok {
 		if duration, err := time.ParseDuration(timeout); err == nil {
 			ill.loopTimeout = duration
 		}
 	}
-	
+
 	if cooldown, ok := config["cooldown_period"].(string); ok {
 		if duration, err := time.ParseDuration(cooldown); err == nil {
 			ill.cooldownPeriod = duration
 		}
 	}
-	
+
 	ill.logger.Info("🔄 Interactive Lore Looper initialized")
 	return nil
 }
@@ -239,7 +239,7 @@ func (ill *InteractiveLoreLooper) Initialize(config map[string]interface{}) erro
 func (ill *InteractiveLoreLooper) StoreLoreFragment(event LoreEvent) (*LoreFragment, error) {
 	ill.mutex.Lock()
 	defer ill.mutex.Unlock()
-	
+
 	fragment := &LoreFragment{
 		ID:              event.SessionID + "_" + fmt.Sprintf("%d", event.SessionEventCount),
 		OriginalContent: event.Content,
@@ -260,7 +260,7 @@ func (ill *InteractiveLoreLooper) StoreLoreFragment(event LoreEvent) (*LoreFragm
 		Children:        make([]string, 0),
 		Parent:          "",
 	}
-	
+
 	// Check if this is an evolution of an existing fragment
 	if parentID, exists := event.Metadata["parent_fragment_id"].(string); exists {
 		fragment.Parent = parentID
@@ -269,18 +269,18 @@ func (ill *InteractiveLoreLooper) StoreLoreFragment(event LoreEvent) (*LoreFragm
 			ill.loreFragments[parentID] = parent
 		}
 	}
-	
+
 	ill.loreFragments[fragment.ID] = fragment
-	
+
 	// Create or update evolution chain
 	ill.updateEvolutionChain(fragment)
-	
+
 	ill.logger.WithFields(logrus.Fields{
 		"fragment_id": fragment.ID,
 		"user_id":     fragment.UserID,
 		"platform":    fragment.Platform,
 	}).Info("📦 Lore fragment stored")
-	
+
 	return fragment, nil
 }
 
@@ -288,13 +288,13 @@ func (ill *InteractiveLoreLooper) StoreLoreFragment(event LoreEvent) (*LoreFragm
 func (ill *InteractiveLoreLooper) TriggerLoreReanimation(request TriggerRequest) (*TriggerResponse, error) {
 	ill.mutex.Lock()
 	defer ill.mutex.Unlock()
-	
+
 	// Validate fragment exists
 	fragment, exists := ill.loreFragments[request.FragmentID]
 	if !exists {
 		return nil, fmt.Errorf("fragment not found: %s", request.FragmentID)
 	}
-	
+
 	// Check if user is in cooldown
 	if ill.isUserInCooldown(request.UserID) {
 		return &TriggerResponse{
@@ -302,7 +302,7 @@ func (ill *InteractiveLoreLooper) TriggerLoreReanimation(request TriggerRequest)
 			Message: "User is in cooldown period",
 		}, nil
 	}
-	
+
 	// Create active loop
 	loop := &ActiveLoop{
 		ID:             ill.generateLoopID(),
@@ -319,12 +319,12 @@ func (ill *InteractiveLoreLooper) TriggerLoreReanimation(request TriggerRequest)
 		Status:         "active",
 		Results:        make([]LoopResult, 0),
 	}
-	
+
 	ill.activeLoops[loop.ID] = loop
-	
+
 	// Start the loop processing
 	go ill.processLoop(loop)
-	
+
 	response := &TriggerResponse{
 		LoopID:        loop.ID,
 		FragmentID:    request.FragmentID,
@@ -338,14 +338,14 @@ func (ill *InteractiveLoreLooper) TriggerLoreReanimation(request TriggerRequest)
 			"platform":       request.Platform,
 		},
 	}
-	
+
 	ill.logger.WithFields(logrus.Fields{
 		"loop_id":     loop.ID,
 		"fragment_id": request.FragmentID,
 		"user_id":     request.UserID,
 		"loop_type":   request.LoopType,
 	}).Info("🔄 Lore reanimation triggered")
-	
+
 	return response, nil
 }
 
@@ -353,13 +353,13 @@ func (ill *InteractiveLoreLooper) TriggerLoreReanimation(request TriggerRequest)
 func (ill *InteractiveLoreLooper) GetLoreFragments() map[string]*LoreFragment {
 	ill.mutex.RLock()
 	defer ill.mutex.RUnlock()
-	
+
 	// Create a copy to avoid race conditions
 	fragments := make(map[string]*LoreFragment)
 	for id, fragment := range ill.loreFragments {
 		fragments[id] = fragment
 	}
-	
+
 	return fragments
 }
 
@@ -367,12 +367,12 @@ func (ill *InteractiveLoreLooper) GetLoreFragments() map[string]*LoreFragment {
 func (ill *InteractiveLoreLooper) GetEvolutionChains() map[string]*EvolutionChain {
 	ill.mutex.RLock()
 	defer ill.mutex.RUnlock()
-	
+
 	chains := make(map[string]*EvolutionChain)
 	for id, chain := range ill.evolutionChains {
 		chains[id] = chain
 	}
-	
+
 	return chains
 }
 
@@ -380,12 +380,12 @@ func (ill *InteractiveLoreLooper) GetEvolutionChains() map[string]*EvolutionChai
 func (ill *InteractiveLoreLooper) GetActiveLoops() map[string]*ActiveLoop {
 	ill.mutex.RLock()
 	defer ill.mutex.RUnlock()
-	
+
 	loops := make(map[string]*ActiveLoop)
 	for id, loop := range ill.activeLoops {
 		loops[id] = loop
 	}
-	
+
 	return loops
 }
 
@@ -393,12 +393,12 @@ func (ill *InteractiveLoreLooper) GetActiveLoops() map[string]*ActiveLoop {
 func (ill *InteractiveLoreLooper) GetLoopStatus(loopID string) (*ActiveLoop, error) {
 	ill.mutex.RLock()
 	defer ill.mutex.RUnlock()
-	
+
 	loop, exists := ill.activeLoops[loopID]
 	if !exists {
 		return nil, fmt.Errorf("loop not found: %s", loopID)
 	}
-	
+
 	return loop, nil
 }
 
@@ -406,28 +406,28 @@ func (ill *InteractiveLoreLooper) GetLoopStatus(loopID string) (*ActiveLoop, err
 func (ill *InteractiveLoreLooper) GetLooperStats() map[string]interface{} {
 	ill.mutex.RLock()
 	defer ill.mutex.RUnlock()
-	
+
 	activeLoopCount := 0
 	for _, loop := range ill.activeLoops {
 		if loop.Status == "active" {
 			activeLoopCount++
 		}
 	}
-	
+
 	return map[string]interface{}{
-		"total_fragments":    len(ill.loreFragments),
-		"evolution_chains":   len(ill.evolutionChains),
-		"active_loops":       activeLoopCount,
-		"total_evolutions":   ill.totalEvolutions,
-		"total_remixes":      ill.totalRemixes,
-		"total_escalations":  ill.totalEscalations,
-		"mutation_rules":     len(ill.mutationRules),
-		"remix_patterns":     len(ill.remixPatterns),
-		"escalation_rules":   len(ill.escalationRules),
-		"max_loop_depth":     ill.maxLoopDepth,
-		"loop_timeout":       ill.loopTimeout,
-		"cooldown_period":    ill.cooldownPeriod,
-		"generated_at":       time.Now(),
+		"total_fragments":   len(ill.loreFragments),
+		"evolution_chains":  len(ill.evolutionChains),
+		"active_loops":      activeLoopCount,
+		"total_evolutions":  ill.totalEvolutions,
+		"total_remixes":     ill.totalRemixes,
+		"total_escalations": ill.totalEscalations,
+		"mutation_rules":    len(ill.mutationRules),
+		"remix_patterns":    len(ill.remixPatterns),
+		"escalation_rules":  len(ill.escalationRules),
+		"max_loop_depth":    ill.maxLoopDepth,
+		"loop_timeout":      ill.loopTimeout,
+		"cooldown_period":   ill.cooldownPeriod,
+		"generated_at":      time.Now(),
 	}
 }
 
@@ -464,7 +464,7 @@ func (ill *InteractiveLoreLooper) initializeDefaultRules() {
 			Enabled:     true,
 		},
 	}
-	
+
 	// Initialize default remix patterns
 	ill.remixPatterns = []RemixPattern{
 		{
@@ -486,26 +486,26 @@ func (ill *InteractiveLoreLooper) initializeDefaultRules() {
 			Enabled:    true,
 		},
 	}
-	
+
 	// Initialize default escalation rules
 	ill.escalationRules = []EscalationRule{
 		{
-			ID:        "priority_escalation",
-			Name:      "Priority Escalation",
-			Trigger:   "high_engagement",
-			Action:    "increase_priority",
-			Intensity: 2,
+			ID:         "priority_escalation",
+			Name:       "Priority Escalation",
+			Trigger:    "high_engagement",
+			Action:     "increase_priority",
+			Intensity:  2,
 			Conditions: map[string]interface{}{"min_priority": 7},
-			Enabled:   true,
+			Enabled:    true,
 		},
 		{
-			ID:        "cursed_escalation",
-			Name:      "Cursed Escalation",
-			Trigger:   "high_cursed_level",
-			Action:    "amplify_cursed_content",
-			Intensity: 3,
+			ID:         "cursed_escalation",
+			Name:       "Cursed Escalation",
+			Trigger:    "high_cursed_level",
+			Action:     "amplify_cursed_content",
+			Intensity:  3,
 			Conditions: map[string]interface{}{"min_cursed_level": 8},
-			Enabled:   true,
+			Enabled:    true,
 		},
 	}
 }
@@ -516,22 +516,22 @@ func (ill *InteractiveLoreLooper) updateEvolutionChain(fragment *LoreFragment) {
 		// Find the root of the chain
 		chainID = ill.findChainRoot(fragment.Parent)
 	}
-	
+
 	if chain, exists := ill.evolutionChains[chainID]; exists {
 		chain.Fragments = append(chain.Fragments, fragment.ID)
 		chain.TotalEvolutions++
 		chain.LastActivity = time.Now()
-		
+
 		if chain.Platforms == nil {
 			chain.Platforms = make(map[string]int)
 		}
 		chain.Platforms[fragment.Platform]++
-		
+
 		if chain.Users == nil {
 			chain.Users = make(map[string]int)
 		}
 		chain.Users[fragment.UserID]++
-		
+
 		ill.evolutionChains[chainID] = chain
 	} else {
 		ill.evolutionChains[chainID] = &EvolutionChain{
@@ -582,27 +582,27 @@ func (ill *InteractiveLoreLooper) processLoop(loop *ActiveLoop) {
 		loop.Status = "completed"
 		ill.mutex.Unlock()
 	}()
-	
+
 	for loop.Iterations < loop.MaxIterations {
 		select {
 		case <-ill.ctx.Done():
 			return
 		case <-time.After(2 * time.Second): // Process every 2 seconds
 			result := ill.performLoopIteration(loop)
-			
+
 			ill.mutex.Lock()
 			loop.Results = append(loop.Results, result)
 			loop.Iterations++
 			loop.LastActivity = time.Now()
 			loop.CurrentContent = result.OutputContent
 			ill.mutex.Unlock()
-			
+
 			if result.Success {
 				ill.logger.WithFields(logrus.Fields{
-					"loop_id":    loop.ID,
-					"iteration":  result.Iteration,
-					"loop_type":  loop.LoopType,
-					"quality":    result.QualityScore,
+					"loop_id":   loop.ID,
+					"iteration": result.Iteration,
+					"loop_type": loop.LoopType,
+					"quality":   result.QualityScore,
 				}).Info("🔄 Loop iteration completed")
 			} else {
 				ill.logger.WithFields(logrus.Fields{
@@ -625,33 +625,33 @@ func (ill *InteractiveLoreLooper) performLoopIteration(loop *ActiveLoop) LoopRes
 		QualityScore:  0.0,
 		Metadata:      make(map[string]interface{}),
 	}
-	
+
 	switch loop.LoopType {
 	case "mutation":
 		result.OutputContent = ill.applyMutation(loop.CurrentContent)
 		result.Success = true
 		result.QualityScore = ill.calculateQualityScore(result.InputContent, result.OutputContent)
 		ill.totalEvolutions++
-		
+
 	case "remix":
 		result.OutputContent = ill.applyRemix(loop.CurrentContent)
 		result.Success = true
 		result.QualityScore = ill.calculateQualityScore(result.InputContent, result.OutputContent)
 		ill.totalRemixes++
-		
+
 	case "escalation":
 		result.OutputContent = ill.applyEscalation(loop.CurrentContent)
 		result.Success = true
 		result.QualityScore = ill.calculateQualityScore(result.InputContent, result.OutputContent)
 		ill.totalEscalations++
-		
+
 	default:
 		result.OutputContent = loop.CurrentContent
 		result.Success = false
 	}
-	
+
 	result.EngagementScore = rand.Float64() * 10.0 // Simulate engagement
-	
+
 	return result
 }
 
@@ -663,14 +663,14 @@ func (ill *InteractiveLoreLooper) applyMutation(content string) string {
 			content = strings.ReplaceAll(content, rule.Pattern, rule.Replacement)
 		}
 	}
-	
+
 	// Add random cursed words
 	cursedWords := []string{"eldritch", "abyssal", "profane", "blasphemous", "malevolent"}
 	if rand.Float64() < 0.3 {
 		word := cursedWords[rand.Intn(len(cursedWords))]
 		content = word + " " + content
 	}
-	
+
 	return content
 }
 
@@ -679,7 +679,7 @@ func (ill *InteractiveLoreLooper) applyRemix(content string) string {
 	if remixed := ill.tryRemixPatterns(content); remixed != "" {
 		return remixed
 	}
-	
+
 	// Fallback to word shuffling
 	return ill.shuffleWords(content)
 }
@@ -689,12 +689,12 @@ func (ill *InteractiveLoreLooper) tryRemixPatterns(content string) string {
 		if !pattern.Enabled || rand.Float64() >= 0.4 {
 			continue
 		}
-		
+
 		words := strings.Fields(content)
 		if len(words) < len(pattern.Variables) {
 			continue
 		}
-		
+
 		return ill.applyRemixTemplate(pattern, words)
 	}
 	return ""
@@ -715,7 +715,7 @@ func (ill *InteractiveLoreLooper) shuffleWords(content string) string {
 	if len(words) <= 2 {
 		return content
 	}
-	
+
 	// Shuffle middle words only
 	for i := 1; i < len(words)-1; i++ {
 		j := rand.Intn(len(words)-2) + 1
@@ -728,10 +728,10 @@ func (ill *InteractiveLoreLooper) applyEscalation(content string) string {
 	// Apply escalation rules
 	escalationPrefixes := []string{"BEHOLD!", "WITNESS!", "TREMBLE!", "FEAR!", "DESPAIR!"}
 	escalationSuffixes := []string{"...and it grows stronger!", "...the horror spreads!", "...reality bends!", "...chaos reigns!"}
-	
+
 	prefix := escalationPrefixes[rand.Intn(len(escalationPrefixes))]
 	suffix := escalationSuffixes[rand.Intn(len(escalationSuffixes))]
-	
+
 	return prefix + " " + strings.ToUpper(content) + " " + suffix
 }
 
@@ -740,10 +740,10 @@ func (ill *InteractiveLoreLooper) calculateQualityScore(input, output string) fl
 	if input == output {
 		return 0.0
 	}
-	
+
 	lengthDiff := float64(len(output)) / float64(len(input))
 	complexityBonus := 0.0
-	
+
 	// Bonus for adding interesting words
 	interestingWords := []string{"ancient", "cursed", "eldritch", "abyssal", "profane", "blasphemous"}
 	for _, word := range interestingWords {
@@ -751,19 +751,19 @@ func (ill *InteractiveLoreLooper) calculateQualityScore(input, output string) fl
 			complexityBonus += 0.1
 		}
 	}
-	
+
 	score := lengthDiff + complexityBonus
 	if score > 10.0 {
 		score = 10.0
 	}
-	
+
 	return score
 }
 
 func (ill *InteractiveLoreLooper) manageActiveLoops() {
 	ticker := time.NewTicker(1 * time.Minute)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-ill.ctx.Done():
@@ -777,16 +777,16 @@ func (ill *InteractiveLoreLooper) manageActiveLoops() {
 func (ill *InteractiveLoreLooper) cleanupExpiredLoops() {
 	ill.mutex.Lock()
 	defer ill.mutex.Unlock()
-	
+
 	cutoff := time.Now().Add(-ill.loopTimeout)
 	toDelete := make([]string, 0)
-	
+
 	for loopID, loop := range ill.activeLoops {
 		if loop.LastActivity.Before(cutoff) || loop.Status == "completed" {
 			toDelete = append(toDelete, loopID)
 		}
 	}
-	
+
 	for _, loopID := range toDelete {
 		delete(ill.activeLoops, loopID)
 		ill.logger.WithField("loop_id", loopID).Info("🧹 Cleaned up expired loop")

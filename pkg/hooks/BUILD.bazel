@@ -1,0 +1,24 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "hooks",
+    srcs = [
+        "discord.go",
+        "haunted.go",
+        "interactive_lore_looper.go",
+        "live_metrics_collector.go",
+        "lore_conflict_detector.go",
+        "lore_dispatcher.go",
+        "lore_markdown_generator.go",
+        "markdown.go",
+        "n8n.go",
+        "tiktok.go",
+    ],
+    importpath = "github.com/mudler/LocalAI/pkg/hooks",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_gin_gonic_gin//:gin",
+        "@com_github_pkg_errors//:errors",
+        "@com_github_sirupsen_logrus//:logrus",
+    ],
+)
