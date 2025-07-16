@@ -62,37 +62,10 @@ jobs:
         echo "Cache clearing complete"
       continue-on-error: true
 
-    - name: 📦 Cache Bazel
-      id: cache-bazel
-      if: ${{ env.CACHE_ENABLED == 'true' }}
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/bazel
-        key: ${{ runner.os }}-bazel-${{ github.run_id }}
-        restore-keys: |
-          ${{ runner.os }}-bazel-
-      continue-on-error: true
-
-    - name: 📦 Cache Bazelisk 
-      id: cache-bazelisk
-      if: ${{ env.CACHE_ENABLED == 'true' }}
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/bazelisk
-        key: ${{ runner.os }}-bazelisk-${{ github.run_id }}
-        restore-keys: |
-          ${{ runner.os }}-bazelisk-
-      continue-on-error: true
-
-    - name: 🔍 Debug cache status
+    - name:  Debug cache status
       run: |
         echo "Cache enabled: ${{ env.CACHE_ENABLED }}"
-        if [ "${{ env.CACHE_ENABLED }}" = "true" ]; then
-          echo "Bazel cache hit: ${{ steps.cache-bazel.outputs.cache-hit }}"
-          echo "Bazelisk cache hit: ${{ steps.cache-bazelisk.outputs.cache-hit }}"
-        else
-          echo "Caching is disabled"
-        fi
+        echo "Caching is disabled - no cache steps will run"
         echo "Cache directories:"
         ls -la ~/.cache/ || echo "No cache directory found"
         mkdir -p ~/.cache/bazel ~/.cache/bazelisk
