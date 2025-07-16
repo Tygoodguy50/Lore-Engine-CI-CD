@@ -37,7 +37,7 @@ jobs:
         bazelisk-version: latest
 
     - name: 📦 Cache Bazel
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.cache/bazel
@@ -79,7 +79,7 @@ jobs:
         echo "- **Build Status**: ✅ SUCCESS" >> build-report.md
         
     - name: 📤 Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: lore-engine-${{ github.sha }}
         path: |
@@ -238,7 +238,7 @@ jobs:
         tar -czf lore-engine-${{ github.sha }}.tar.gz deployment/
 
     - name: 📤 Upload deployment package
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: lore-engine-production-${{ github.sha }}
         path: lore-engine-${{ github.sha }}.tar.gz
@@ -408,7 +408,7 @@ jobs:
         echo "- **Test Status**: ✅ PASSED" >> performance-report.md
 
     - name: 📤 Upload performance report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: performance-report-${{ github.sha }}
         path: performance-report.md
