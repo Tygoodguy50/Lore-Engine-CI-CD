@@ -1,0 +1,23 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "ripemd160",
+    srcs = [
+        "ripemd160.go",
+        "ripemd160block.go",
+    ],
+    importpath = "golang.org/x/crypto/ripemd160",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":ripemd160",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "ripemd160_test",
+    srcs = ["ripemd160_test.go"],
+    embed = [":ripemd160"],
+)

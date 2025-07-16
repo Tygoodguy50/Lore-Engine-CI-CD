@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "characters",
+    srcs = [
+        "ascii.go",
+        "utf8.go",
+    ],
+    importpath = "github.com/pelletier/go-toml/v2/internal/characters",
+    importpath_aliases = ["github.com/pelletier/go-toml/internal/characters"],
+    visibility = ["//:__subpackages__"],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":characters",
+    visibility = ["//:__subpackages__"],
+)

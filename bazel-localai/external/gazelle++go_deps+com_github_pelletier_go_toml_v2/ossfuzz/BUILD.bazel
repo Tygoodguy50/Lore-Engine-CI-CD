@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "ossfuzz",
+    srcs = ["fuzz.go"],
+    importpath = "github.com/pelletier/go-toml/v2/ossfuzz",
+    importpath_aliases = ["github.com/pelletier/go-toml/ossfuzz"],
+    visibility = ["//visibility:public"],
+    deps = ["//:go-toml"],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":ossfuzz",
+    visibility = ["//visibility:public"],
+)

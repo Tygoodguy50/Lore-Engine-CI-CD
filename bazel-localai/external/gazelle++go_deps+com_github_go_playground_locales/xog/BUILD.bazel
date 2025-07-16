@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "xog",
+    srcs = ["xog.go"],
+    importpath = "github.com/go-playground/locales/xog",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":xog",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "xog_test",
+    srcs = ["xog_test.go"],
+    embed = [":xog"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

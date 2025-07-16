@@ -1,0 +1,41 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "poly1305",
+    srcs = [
+        "bits_compat.go",
+        "bits_go1.13.go",
+        "mac_noasm.go",
+        "poly1305.go",
+        "sum_amd64.go",
+        "sum_amd64.s",
+        "sum_generic.go",
+        "sum_ppc64le.go",
+        "sum_ppc64le.s",
+        "sum_s390x.go",
+        "sum_s390x.s",
+    ],
+    importpath = "golang.org/x/crypto/internal/poly1305",
+    visibility = ["//:__subpackages__"],
+    deps = select({
+        "@io_bazel_rules_go//go/platform:s390x": [
+            "@org_golang_x_sys//cpu",
+        ],
+        "//conditions:default": [],
+    }),
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":poly1305",
+    visibility = ["//:__subpackages__"],
+)
+
+go_test(
+    name = "poly1305_test",
+    srcs = [
+        "poly1305_test.go",
+        "vectors_test.go",
+    ],
+    embed = [":poly1305"],
+)

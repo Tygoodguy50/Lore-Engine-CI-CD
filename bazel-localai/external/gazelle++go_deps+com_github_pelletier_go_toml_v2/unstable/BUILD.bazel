@@ -1,0 +1,36 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "unstable",
+    srcs = [
+        "ast.go",
+        "builder.go",
+        "doc.go",
+        "kind.go",
+        "parser.go",
+        "scanner.go",
+    ],
+    importpath = "github.com/pelletier/go-toml/v2/unstable",
+    importpath_aliases = ["github.com/pelletier/go-toml/unstable"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//internal/characters",
+        "//internal/danger",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":unstable",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "unstable_test",
+    srcs = [
+        "benchmark_test.go",
+        "parser_test.go",
+    ],
+    embed = [":unstable"],
+    deps = ["@com_github_stretchr_testify//require:go_default_library"],
+)

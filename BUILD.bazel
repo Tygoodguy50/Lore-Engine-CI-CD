@@ -1,0 +1,27 @@
+load("@gazelle//:def.bzl", "gazelle")
+load("@rules_go//go:def.bzl", "go_binary")
+
+# This rule generates and updates BUILD.bazel files for Go packages
+gazelle(
+    name = "gazelle",
+    gazelle = "@gazelle//cmd/gazelle",
+)
+
+# This rule updates external Go dependencies for Bzlmod
+gazelle(
+    name = "gazelle-update-repos",
+    args = [
+        "-from_file=go.mod",
+        "-to_macro=deps.bzl%go_dependencies",
+        "-prune",
+    ],
+    command = "update-repos",
+    gazelle = "@gazelle//cmd/gazelle",
+)
+
+# Main local-ai binary target
+go_binary(
+    name = "local-ai",
+    embed = ["//cmd/local-ai:local-ai_lib"],
+    visibility = ["//visibility:public"],
+)

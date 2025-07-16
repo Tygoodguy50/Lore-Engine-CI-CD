@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "map-validation_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/go-playground/validator/v10/_examples/map-validation",
+    importpath_aliases = ["github.com/go-playground/validator/_examples/map-validation"],
+    visibility = ["//visibility:private"],
+    deps = ["//:validator"],
+)
+
+go_binary(
+    name = "map-validation",
+    embed = [":map-validation_lib"],
+    visibility = ["//visibility:public"],
+)

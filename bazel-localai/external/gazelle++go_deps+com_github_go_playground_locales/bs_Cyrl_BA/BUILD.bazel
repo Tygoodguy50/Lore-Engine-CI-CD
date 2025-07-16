@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "bs_Cyrl_BA",
+    srcs = ["bs_Cyrl_BA.go"],
+    importpath = "github.com/go-playground/locales/bs_Cyrl_BA",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":bs_Cyrl_BA",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "bs_Cyrl_BA_test",
+    srcs = ["bs_Cyrl_BA_test.go"],
+    embed = [":bs_Cyrl_BA"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

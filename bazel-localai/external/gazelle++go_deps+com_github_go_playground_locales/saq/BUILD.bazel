@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "saq",
+    srcs = ["saq.go"],
+    importpath = "github.com/go-playground/locales/saq",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":saq",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "saq_test",
+    srcs = ["saq_test.go"],
+    embed = [":saq"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "agq",
+    srcs = ["agq.go"],
+    importpath = "github.com/go-playground/locales/agq",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":agq",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "agq_test",
+    srcs = ["agq_test.go"],
+    embed = [":agq"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

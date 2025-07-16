@@ -1,0 +1,30 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "box",
+    srcs = ["box.go"],
+    importpath = "golang.org/x/crypto/nacl/box",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//blake2b",
+        "//curve25519",
+        "//nacl/secretbox",
+        "//salsa20/salsa",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":box",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "box_test",
+    srcs = [
+        "box_test.go",
+        "example_test.go",
+    ],
+    embed = [":box"],
+    deps = ["//curve25519"],
+)

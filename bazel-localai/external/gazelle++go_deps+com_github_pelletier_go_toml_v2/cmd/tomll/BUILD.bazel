@@ -1,0 +1,29 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+
+go_library(
+    name = "tomll_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/pelletier/go-toml/v2/cmd/tomll",
+    importpath_aliases = ["github.com/pelletier/go-toml/cmd/tomll"],
+    visibility = ["//visibility:private"],
+    deps = [
+        "//:go-toml",
+        "//internal/cli",
+    ],
+)
+
+go_binary(
+    name = "tomll",
+    embed = [":tomll_lib"],
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "tomll_test",
+    srcs = ["main_test.go"],
+    embed = [":tomll_lib"],
+    deps = [
+        "@com_github_stretchr_testify//assert:go_default_library",
+        "@com_github_stretchr_testify//require:go_default_library",
+    ],
+)

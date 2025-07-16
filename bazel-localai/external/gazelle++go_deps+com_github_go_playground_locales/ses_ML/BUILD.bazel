@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "ses_ML",
+    srcs = ["ses_ML.go"],
+    importpath = "github.com/go-playground/locales/ses_ML",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":ses_ML",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "ses_ML_test",
+    srcs = ["ses_ML_test.go"],
+    embed = [":ses_ML"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

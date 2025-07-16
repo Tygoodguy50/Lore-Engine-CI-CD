@@ -1,0 +1,23 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "oci",
+    srcs = ["container.go"],
+    importpath = "github.com/mudler/LocalAI/pkg/oci",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_pkg_errors//:errors",
+        "@com_github_sirupsen_logrus//:logrus",
+    ],
+)
+
+go_test(
+    name = "oci_test",
+    srcs = ["container_test.go"],
+    embed = [":oci"],
+    deps = [
+        "@com_github_pkg_errors//:errors",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+    ],
+)

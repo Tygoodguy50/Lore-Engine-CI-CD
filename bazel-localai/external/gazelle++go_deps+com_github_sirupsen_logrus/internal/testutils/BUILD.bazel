@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "testutils",
+    srcs = ["testutils.go"],
+    importpath = "github.com/sirupsen/logrus/internal/testutils",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//:logrus",
+        "@com_github_stretchr_testify//require:go_default_library",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":testutils",
+    visibility = ["//:__subpackages__"],
+)

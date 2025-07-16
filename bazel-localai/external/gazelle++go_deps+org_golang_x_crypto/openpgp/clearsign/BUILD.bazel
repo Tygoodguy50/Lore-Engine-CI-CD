@@ -1,0 +1,29 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "clearsign",
+    srcs = ["clearsign.go"],
+    importpath = "golang.org/x/crypto/openpgp/clearsign",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//openpgp/armor",
+        "//openpgp/errors",
+        "//openpgp/packet",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":clearsign",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "clearsign_test",
+    srcs = ["clearsign_test.go"],
+    embed = [":clearsign"],
+    deps = [
+        "//openpgp",
+        "//openpgp/packet",
+    ],
+)

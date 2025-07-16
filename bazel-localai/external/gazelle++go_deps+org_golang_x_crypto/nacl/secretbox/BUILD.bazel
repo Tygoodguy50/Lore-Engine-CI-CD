@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "secretbox",
+    srcs = ["secretbox.go"],
+    importpath = "golang.org/x/crypto/nacl/secretbox",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//internal/alias",
+        "//internal/poly1305",
+        "//salsa20/salsa",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":secretbox",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "secretbox_test",
+    srcs = [
+        "example_test.go",
+        "secretbox_test.go",
+    ],
+    embed = [":secretbox"],
+)

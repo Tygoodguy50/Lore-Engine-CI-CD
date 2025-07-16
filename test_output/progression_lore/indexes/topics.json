@@ -1,0 +1,88 @@
+{
+  "algorithm": [
+    "51a1fc1a0230"
+  ],
+  "ancient": [
+    "51a1fc1a0230"
+  ],
+  "code": [
+    "b70bcb433947"
+  ],
+  "data": [
+    "1a229067a087"
+  ],
+  "digital": [
+    "602b847b5776",
+    "f660b8f1c393",
+    "30e2e6f862d2"
+  ],
+  "entity": [
+    "30e2e6f862d2"
+  ],
+  "event_1": [
+    "602b847b5776"
+  ],
+  "event_10": [
+    "bcaaa5e7a7aa"
+  ],
+  "event_2": [
+    "51a1fc1a0230"
+  ],
+  "event_3": [
+    "e6a0577eb2de"
+  ],
+  "event_4": [
+    "1a229067a087"
+  ],
+  "event_5": [
+    "6c8e90f3d812"
+  ],
+  "event_6": [
+    "f660b8f1c393"
+  ],
+  "event_7": [
+    "b70bcb433947"
+  ],
+  "event_8": [
+    "73e4ed7fc5be"
+  ],
+  "event_9": [
+    "30e2e6f862d2"
+  ],
+  "knowledge": [
+    "e6a0577eb2de"
+  ],
+  "progression": [
+    "602b847b5776",
+    "51a1fc1a0230",
+    "e6a0577eb2de",
+    "1a229067a087",
+    "6c8e90f3d812",
+    "f660b8f1c393",
+    "b70bcb433947",
+    "73e4ed7fc5be",
+    "30e2e6f862d2",
+    "bcaaa5e7a7aa"
+  ],
+  "system": [
+    "73e4ed7fc5be"
+  ],
+  "timeline": [
+    "602b847b5776",
+    "51a1fc1a0230",
+    "e6a0577eb2de",
+    "1a229067a087",
+    "6c8e90f3d812",
+    "f660b8f1c393",
+    "b70bcb433947",
+    "73e4ed7fc5be",
+    "30e2e6f862d2",
+    "bcaaa5e7a7aa"
+  ],
+  "void": [
+    "602b847b5776"
+  ],
+  "whispers": [
+    "602b847b5776"
+  ]
+}

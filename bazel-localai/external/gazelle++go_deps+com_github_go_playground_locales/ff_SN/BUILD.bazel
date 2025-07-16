@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "ff_SN",
+    srcs = ["ff_SN.go"],
+    importpath = "github.com/go-playground/locales/ff_SN",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":ff_SN",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "ff_SN_test",
+    srcs = ["ff_SN_test.go"],
+    embed = [":ff_SN"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "struct-level_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/go-playground/validator/v10/_examples/struct-level",
+    importpath_aliases = ["github.com/go-playground/validator/_examples/struct-level"],
+    visibility = ["//visibility:private"],
+    deps = ["//:validator"],
+)
+
+go_binary(
+    name = "struct-level",
+    embed = [":struct-level_lib"],
+    visibility = ["//visibility:public"],
+)

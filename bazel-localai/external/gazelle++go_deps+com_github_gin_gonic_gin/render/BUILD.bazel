@@ -1,0 +1,53 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "render",
+    srcs = [
+        "data.go",
+        "html.go",
+        "json.go",
+        "msgpack.go",
+        "protobuf.go",
+        "reader.go",
+        "redirect.go",
+        "render.go",
+        "text.go",
+        "toml.go",
+        "xml.go",
+        "yaml.go",
+    ],
+    importpath = "github.com/gin-gonic/gin/render",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//internal/bytesconv",
+        "//internal/json",
+        "@com_github_pelletier_go_toml_v2//:go-toml",
+        "@com_github_ugorji_go_codec//:codec",
+        "@in_gopkg_yaml_v3//:yaml_v3",
+        "@org_golang_google_protobuf//proto",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":render",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "render_test",
+    srcs = [
+        "reader_test.go",
+        "render_msgpack_test.go",
+        "render_test.go",
+    ],
+    embed = [":render"],
+    deps = [
+        "//internal/json",
+        "//testdata/protoexample",
+        "@com_github_stretchr_testify//assert:go_default_library",
+        "@com_github_stretchr_testify//require:go_default_library",
+        "@com_github_ugorji_go_codec//:codec",
+        "@org_golang_google_protobuf//proto",
+    ],
+)

@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "tomltestgen_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/pelletier/go-toml/v2/cmd/tomltestgen",
+    importpath_aliases = ["github.com/pelletier/go-toml/cmd/tomltestgen"],
+    visibility = ["//visibility:private"],
+)
+
+go_binary(
+    name = "tomltestgen",
+    embed = [":tomltestgen_lib"],
+    visibility = ["//visibility:public"],
+)

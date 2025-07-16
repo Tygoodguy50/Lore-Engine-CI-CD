@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "khq_ML",
+    srcs = ["khq_ML.go"],
+    importpath = "github.com/go-playground/locales/khq_ML",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":khq_ML",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "khq_ML_test",
+    srcs = ["khq_ML_test.go"],
+    embed = [":khq_ML"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

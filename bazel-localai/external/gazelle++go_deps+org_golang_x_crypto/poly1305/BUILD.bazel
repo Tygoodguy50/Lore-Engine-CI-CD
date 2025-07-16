@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "poly1305",
+    srcs = ["poly1305_compat.go"],
+    importpath = "golang.org/x/crypto/poly1305",
+    visibility = ["//visibility:public"],
+    deps = ["//internal/poly1305"],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":poly1305",
+    visibility = ["//visibility:public"],
+)

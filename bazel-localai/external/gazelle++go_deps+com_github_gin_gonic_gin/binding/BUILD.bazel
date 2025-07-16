@@ -1,0 +1,66 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "binding",
+    srcs = [
+        "binding.go",
+        "default_validator.go",
+        "form.go",
+        "form_mapping.go",
+        "header.go",
+        "json.go",
+        "msgpack.go",
+        "multipart_form_mapping.go",
+        "protobuf.go",
+        "query.go",
+        "toml.go",
+        "uri.go",
+        "xml.go",
+        "yaml.go",
+    ],
+    importpath = "github.com/gin-gonic/gin/binding",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//internal/bytesconv",
+        "//internal/json",
+        "@com_github_go_playground_validator_v10//:validator",
+        "@com_github_pelletier_go_toml_v2//:go-toml",
+        "@com_github_ugorji_go_codec//:codec",
+        "@in_gopkg_yaml_v3//:yaml_v3",
+        "@org_golang_google_protobuf//proto",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":binding",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "binding_test",
+    srcs = [
+        "binding_msgpack_test.go",
+        "binding_test.go",
+        "default_validator_benchmark_test.go",
+        "default_validator_test.go",
+        "form_mapping_benchmark_test.go",
+        "form_mapping_test.go",
+        "json_test.go",
+        "msgpack_test.go",
+        "multipart_form_mapping_test.go",
+        "toml_test.go",
+        "validate_test.go",
+        "xml_test.go",
+        "yaml_test.go",
+    ],
+    embed = [":binding"],
+    deps = [
+        "//testdata/protoexample",
+        "@com_github_go_playground_validator_v10//:validator",
+        "@com_github_stretchr_testify//assert:go_default_library",
+        "@com_github_stretchr_testify//require:go_default_library",
+        "@com_github_ugorji_go_codec//:codec",
+        "@org_golang_google_protobuf//proto",
+    ],
+)

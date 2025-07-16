@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "ti",
+    srcs = ["ti.go"],
+    importpath = "github.com/go-playground/locales/ti",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":ti",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "ti_test",
+    srcs = ["ti_test.go"],
+    embed = [":ti"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

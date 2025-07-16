@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "rof_TZ",
+    srcs = ["rof_TZ.go"],
+    importpath = "github.com/go-playground/locales/rof_TZ",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":rof_TZ",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "rof_TZ_test",
+    srcs = ["rof_TZ_test.go"],
+    embed = [":rof_TZ"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

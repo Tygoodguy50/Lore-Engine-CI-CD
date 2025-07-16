@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "vai_Vaii_LR",
+    srcs = ["vai_Vaii_LR.go"],
+    importpath = "github.com/go-playground/locales/vai_Vaii_LR",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":vai_Vaii_LR",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "vai_Vaii_LR_test",
+    srcs = ["vai_Vaii_LR_test.go"],
+    embed = [":vai_Vaii_LR"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

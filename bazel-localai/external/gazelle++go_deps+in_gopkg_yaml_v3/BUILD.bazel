@@ -1,0 +1,44 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "yaml_v3",
+    srcs = [
+        "apic.go",
+        "decode.go",
+        "emitterc.go",
+        "encode.go",
+        "parserc.go",
+        "readerc.go",
+        "resolve.go",
+        "scannerc.go",
+        "sorter.go",
+        "writerc.go",
+        "yaml.go",
+        "yamlh.go",
+        "yamlprivateh.go",
+    ],
+    importpath = "gopkg.in/yaml.v3",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":yaml_v3",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "yaml_v3_test",
+    srcs = [
+        "decode_test.go",
+        "encode_test.go",
+        "example_embedded_test.go",
+        "limit_test.go",
+        "node_test.go",
+        "suite_test.go",
+    ],
+    deps = [
+        ":yaml_v3",
+        "@in_gopkg_check_v1//:go_default_library",
+    ],
+)

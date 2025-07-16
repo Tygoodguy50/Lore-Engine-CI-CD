@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "nus_SS",
+    srcs = ["nus_SS.go"],
+    importpath = "github.com/go-playground/locales/nus_SS",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":nus_SS",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "nus_SS_test",
+    srcs = ["nus_SS_test.go"],
+    embed = [":nus_SS"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
