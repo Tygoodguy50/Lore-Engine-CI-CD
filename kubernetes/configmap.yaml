@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lore-engine-config
+  namespace: lore-engine
+data:
+  PORT: "8080"
+  ENVIRONMENT: "production"
+  BAZEL_VERSION: "7.0.0"
+  GO_VERSION: "1.21"
+  
+  # Lore Engine Configuration
+  LORE_LEVEL: "5"
+  CURSED_LEVEL: "3"
+  CONFLICT_DETECTION_ENABLED: "true"
+  LIVE_METRICS_ENABLED: "true"
+  INTERACTIVE_LOOPING_ENABLED: "true"
+  MARKDOWN_GENERATION_ENABLED: "true"
+  
+  # Hook System Configuration
+  HAUNTED_HOOKS_ENABLED: "true"
+  DISCORD_INTEGRATION_ENABLED: "true"
+  TIKTOK_INTEGRATION_ENABLED: "true"
+  N8N_INTEGRATION_ENABLED: "true"
+  
+  # Performance Settings
+  MAX_CONCURRENT_REQUESTS: "100"
+  REQUEST_TIMEOUT: "30s"
+  HEALTH_CHECK_INTERVAL: "10s"
+  
+  # Security Settings
+  CORS_ENABLED: "true"
+  RATE_LIMITING_ENABLED: "true"
+  AUTH_REQUIRED: "false"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: lore-engine-secrets
+  namespace: lore-engine
+type: Opaque
+data:
+  # Base64 encoded secrets - replace with your actual values
+  # echo -n "your-discord-token" | base64
+  DISCORD_TOKEN: ""
+  DISCORD_CHANNEL_ID: ""
+  DISCORD_GUILD_ID: ""
+  
+  # TikTok Integration
+  TIKTOK_WEBHOOK_URL: ""
+  TIKTOK_ACCESS_TOKEN: ""
+  
+  # N8N LangChain Integration
+  N8N_WEBHOOK_URL: ""
+  N8N_API_KEY: ""
+  LANGCHAIN_URL: ""
+  
+  # GitHub Integration
+  GITHUB_TOKEN: ""
+  
+  # Database (if needed)
+  DATABASE_URL: ""
+  
+  # Additional API Keys
+  OPENAI_API_KEY: ""
+  ANTHROPIC_API_KEY: ""
