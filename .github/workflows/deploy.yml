@@ -45,7 +45,7 @@ jobs:
 
     - name: 📦 Cache Bazel
       id: cache-bazel
-      if: env.CACHE_ENABLED == 'true'
+      if: ${{ env.CACHE_ENABLED == 'true' }}
       uses: actions/cache@v4
       with:
         path: ~/.cache/bazel
@@ -56,7 +56,7 @@ jobs:
 
     - name: 📦 Cache Bazelisk 
       id: cache-bazelisk
-      if: env.CACHE_ENABLED == 'true'
+      if: ${{ env.CACHE_ENABLED == 'true' }}
       uses: actions/cache@v4
       with:
         path: ~/.cache/bazelisk
@@ -67,8 +67,13 @@ jobs:
 
     - name: 🔍 Debug cache status
       run: |
-        echo "Bazel cache hit: ${{ steps.cache-bazel.outputs.cache-hit }}"
-        echo "Bazelisk cache hit: ${{ steps.cache-bazelisk.outputs.cache-hit }}"
+        echo "Cache enabled: ${{ env.CACHE_ENABLED }}"
+        if [ "${{ env.CACHE_ENABLED }}" = "true" ]; then
+          echo "Bazel cache hit: ${{ steps.cache-bazel.outputs.cache-hit }}"
+          echo "Bazelisk cache hit: ${{ steps.cache-bazelisk.outputs.cache-hit }}"
+        else
+          echo "Caching is disabled"
+        fi
         echo "Cache directories:"
         ls -la ~/.cache/ || echo "No cache directory found"
         mkdir -p ~/.cache/bazel ~/.cache/bazelisk
