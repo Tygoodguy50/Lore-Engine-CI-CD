@@ -28,6 +28,7 @@ jobs:
         fetch-depth: 0
 
     - name: 🧹 Clear cache directories
+      if: ${{ env.CACHE_ENABLED == 'true' }}
       run: |
         sudo rm -rf ~/.cache/bazel ~/.cache/bazelisk || true
         mkdir -p ~/.cache/bazel ~/.cache/bazelisk
@@ -379,8 +380,8 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+        cache-from: ${{ env.CACHE_ENABLED == 'true' && 'type=gha' || '' }}
+        cache-to: ${{ env.CACHE_ENABLED == 'true' && 'type=gha,mode=max' || '' }}
         platforms: linux/amd64
 
   # Performance testing
