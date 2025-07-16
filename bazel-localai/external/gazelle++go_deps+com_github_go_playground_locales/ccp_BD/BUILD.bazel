@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "ccp_BD",
+    srcs = ["ccp_BD.go"],
+    importpath = "github.com/go-playground/locales/ccp_BD",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":ccp_BD",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "ccp_BD_test",
+    srcs = ["ccp_BD_test.go"],
+    embed = [":ccp_BD"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "ig_NG",
+    srcs = ["ig_NG.go"],
+    importpath = "github.com/go-playground/locales/ig_NG",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":ig_NG",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "ig_NG_test",
+    srcs = ["ig_NG_test.go"],
+    embed = [":ig_NG"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

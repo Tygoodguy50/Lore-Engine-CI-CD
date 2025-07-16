@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "mua",
+    srcs = ["mua.go"],
+    importpath = "github.com/go-playground/locales/mua",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":mua",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "mua_test",
+    srcs = ["mua_test.go"],
+    embed = [":mua"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "lag_TZ",
+    srcs = ["lag_TZ.go"],
+    importpath = "github.com/go-playground/locales/lag_TZ",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":lag_TZ",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "lag_TZ_test",
+    srcs = ["lag_TZ_test.go"],
+    embed = [":lag_TZ"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

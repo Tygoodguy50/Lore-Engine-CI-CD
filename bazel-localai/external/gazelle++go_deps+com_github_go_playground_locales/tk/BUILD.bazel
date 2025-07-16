@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "tk",
+    srcs = ["tk.go"],
+    importpath = "github.com/go-playground/locales/tk",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":tk",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "tk_test",
+    srcs = ["tk_test.go"],
+    embed = [":tk"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

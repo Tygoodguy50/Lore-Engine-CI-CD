@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "md4",
+    srcs = [
+        "md4.go",
+        "md4block.go",
+    ],
+    importpath = "golang.org/x/crypto/md4",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":md4",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "md4_test",
+    srcs = [
+        "example_test.go",
+        "md4_test.go",
+    ],
+    embed = [":md4"],
+)

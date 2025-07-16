@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "fa_IR",
+    srcs = ["fa_IR.go"],
+    importpath = "github.com/go-playground/locales/fa_IR",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":fa_IR",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "fa_IR_test",
+    srcs = ["fa_IR_test.go"],
+    embed = [":fa_IR"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

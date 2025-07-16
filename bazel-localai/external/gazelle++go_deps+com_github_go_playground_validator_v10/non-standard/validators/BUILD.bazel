@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "validators",
+    srcs = ["notblank.go"],
+    importpath = "github.com/go-playground/validator/v10/non-standard/validators",
+    importpath_aliases = ["github.com/go-playground/validator/non-standard/validators"],
+    visibility = ["//visibility:public"],
+    deps = ["//:validator"],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":validators",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "validators_test",
+    srcs = ["notblank_test.go"],
+    embed = [":validators"],
+    deps = [
+        "//:validator",
+        "@com_github_go_playground_assert_v2//:go_default_library",
+    ],
+)

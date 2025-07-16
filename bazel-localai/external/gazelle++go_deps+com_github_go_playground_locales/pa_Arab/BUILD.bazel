@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "pa_Arab",
+    srcs = ["pa_Arab.go"],
+    importpath = "github.com/go-playground/locales/pa_Arab",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":pa_Arab",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "pa_Arab_test",
+    srcs = ["pa_Arab_test.go"],
+    embed = [":pa_Arab"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

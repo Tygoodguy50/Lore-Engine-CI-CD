@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "si_LK",
+    srcs = ["si_LK.go"],
+    importpath = "github.com/go-playground/locales/si_LK",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":si_LK",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "si_LK_test",
+    srcs = ["si_LK_test.go"],
+    embed = [":si_LK"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

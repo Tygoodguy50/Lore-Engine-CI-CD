@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "ff_Latn_SL",
+    srcs = ["ff_Latn_SL.go"],
+    importpath = "github.com/go-playground/locales/ff_Latn_SL",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":ff_Latn_SL",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "ff_Latn_SL_test",
+    srcs = ["ff_Latn_SL_test.go"],
+    embed = [":ff_Latn_SL"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

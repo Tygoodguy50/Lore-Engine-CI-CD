@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "ha_NE",
+    srcs = ["ha_NE.go"],
+    importpath = "github.com/go-playground/locales/ha_NE",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":ha_NE",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "ha_NE_test",
+    srcs = ["ha_NE_test.go"],
+    embed = [":ha_NE"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

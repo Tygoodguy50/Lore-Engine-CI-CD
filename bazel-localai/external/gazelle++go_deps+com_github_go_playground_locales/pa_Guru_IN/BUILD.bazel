@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "pa_Guru_IN",
+    srcs = ["pa_Guru_IN.go"],
+    importpath = "github.com/go-playground/locales/pa_Guru_IN",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":pa_Guru_IN",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "pa_Guru_IN_test",
+    srcs = ["pa_Guru_IN_test.go"],
+    embed = [":pa_Guru_IN"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

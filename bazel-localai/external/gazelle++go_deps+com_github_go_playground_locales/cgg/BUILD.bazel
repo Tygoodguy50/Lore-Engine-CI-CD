@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "cgg",
+    srcs = ["cgg.go"],
+    importpath = "github.com/go-playground/locales/cgg",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":cgg",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "cgg_test",
+    srcs = ["cgg_test.go"],
+    embed = [":cgg"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

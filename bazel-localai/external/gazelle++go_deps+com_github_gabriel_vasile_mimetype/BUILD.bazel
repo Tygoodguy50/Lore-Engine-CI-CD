@@ -1,0 +1,33 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "mimetype",
+    srcs = [
+        "mime.go",
+        "mimetype.go",
+        "tree.go",
+    ],
+    importpath = "github.com/gabriel-vasile/mimetype",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//internal/charset",
+        "//internal/magic",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":mimetype",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "mimetype_test",
+    srcs = [
+        "example_mimetype_test.go",
+        "example_reader_test.go",
+        "mimetype_test.go",
+    ],
+    data = glob(["testdata/**"]),
+    embed = [":mimetype"],
+)

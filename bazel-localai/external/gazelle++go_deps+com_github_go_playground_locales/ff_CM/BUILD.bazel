@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "ff_CM",
+    srcs = ["ff_CM.go"],
+    importpath = "github.com/go-playground/locales/ff_CM",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":ff_CM",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "ff_CM_test",
+    srcs = ["ff_CM_test.go"],
+    embed = [":ff_CM"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

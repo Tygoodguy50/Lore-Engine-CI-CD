@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "nyn_UG",
+    srcs = ["nyn_UG.go"],
+    importpath = "github.com/go-playground/locales/nyn_UG",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":nyn_UG",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "nyn_UG_test",
+    srcs = ["nyn_UG_test.go"],
+    embed = [":nyn_UG"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

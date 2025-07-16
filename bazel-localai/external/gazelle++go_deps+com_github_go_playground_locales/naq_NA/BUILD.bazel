@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "naq_NA",
+    srcs = ["naq_NA.go"],
+    importpath = "github.com/go-playground/locales/naq_NA",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":naq_NA",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "naq_NA_test",
+    srcs = ["naq_NA_test.go"],
+    embed = [":naq_NA"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

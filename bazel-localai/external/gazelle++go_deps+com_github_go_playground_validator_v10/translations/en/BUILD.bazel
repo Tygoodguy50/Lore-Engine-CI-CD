@@ -1,0 +1,32 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "en",
+    srcs = ["en.go"],
+    importpath = "github.com/go-playground/validator/v10/translations/en",
+    importpath_aliases = ["github.com/go-playground/validator/translations/en"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:validator",
+        "@com_github_go_playground_locales//:locales",
+        "@com_github_go_playground_universal_translator//:universal-translator",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":en",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "en_test",
+    srcs = ["en_test.go"],
+    embed = [":en"],
+    deps = [
+        "//:validator",
+        "@com_github_go_playground_assert_v2//:go_default_library",
+        "@com_github_go_playground_locales//en",
+        "@com_github_go_playground_universal_translator//:universal-translator",
+    ],
+)

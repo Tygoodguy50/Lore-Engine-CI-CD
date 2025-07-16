@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "custom-validation_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/go-playground/validator/v10/_examples/custom-validation",
+    importpath_aliases = ["github.com/go-playground/validator/_examples/custom-validation"],
+    visibility = ["//visibility:private"],
+    deps = ["//:validator"],
+)
+
+go_binary(
+    name = "custom-validation",
+    embed = [":custom-validation_lib"],
+    visibility = ["//visibility:public"],
+)

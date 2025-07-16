@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "prg",
+    srcs = ["prg.go"],
+    importpath = "github.com/go-playground/locales/prg",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":prg",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "prg_test",
+    srcs = ["prg_test.go"],
+    embed = [":prg"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

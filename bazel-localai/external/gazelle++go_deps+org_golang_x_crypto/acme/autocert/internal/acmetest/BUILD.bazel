@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "acmetest",
+    srcs = ["ca.go"],
+    importpath = "golang.org/x/crypto/acme/autocert/internal/acmetest",
+    visibility = ["//acme/autocert:__subpackages__"],
+    deps = ["//acme"],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":acmetest",
+    visibility = ["//acme/autocert:__subpackages__"],
+)

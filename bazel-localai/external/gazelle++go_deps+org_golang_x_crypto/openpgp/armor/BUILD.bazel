@@ -1,0 +1,24 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "armor",
+    srcs = [
+        "armor.go",
+        "encode.go",
+    ],
+    importpath = "golang.org/x/crypto/openpgp/armor",
+    visibility = ["//visibility:public"],
+    deps = ["//openpgp/errors"],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":armor",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "armor_test",
+    srcs = ["armor_test.go"],
+    embed = [":armor"],
+)

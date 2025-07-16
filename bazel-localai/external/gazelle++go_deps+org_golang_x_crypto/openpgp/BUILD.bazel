@@ -1,0 +1,42 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "openpgp",
+    srcs = [
+        "canonical_text.go",
+        "keys.go",
+        "read.go",
+        "write.go",
+    ],
+    importpath = "golang.org/x/crypto/openpgp",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//openpgp/armor",
+        "//openpgp/errors",
+        "//openpgp/packet",
+        "//openpgp/s2k",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":openpgp",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "openpgp_test",
+    srcs = [
+        "canonical_text_test.go",
+        "keys_data_test.go",
+        "keys_test.go",
+        "read_test.go",
+        "write_test.go",
+    ],
+    embed = [":openpgp"],
+    deps = [
+        "//openpgp/armor",
+        "//openpgp/errors",
+        "//openpgp/packet",
+    ],
+)

@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "seh_MZ",
+    srcs = ["seh_MZ.go"],
+    importpath = "github.com/go-playground/locales/seh_MZ",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":seh_MZ",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "seh_MZ_test",
+    srcs = ["seh_MZ_test.go"],
+    embed = [":seh_MZ"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

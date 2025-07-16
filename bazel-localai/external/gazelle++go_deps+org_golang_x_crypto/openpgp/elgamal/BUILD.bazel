@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "elgamal",
+    srcs = ["elgamal.go"],
+    importpath = "golang.org/x/crypto/openpgp/elgamal",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":elgamal",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "elgamal_test",
+    srcs = ["elgamal_test.go"],
+    embed = [":elgamal"],
+)

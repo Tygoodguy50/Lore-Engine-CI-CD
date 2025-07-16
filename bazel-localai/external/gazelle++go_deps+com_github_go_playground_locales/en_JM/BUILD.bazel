@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "en_JM",
+    srcs = ["en_JM.go"],
+    importpath = "github.com/go-playground/locales/en_JM",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":en_JM",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "en_JM_test",
+    srcs = ["en_JM_test.go"],
+    embed = [":en_JM"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

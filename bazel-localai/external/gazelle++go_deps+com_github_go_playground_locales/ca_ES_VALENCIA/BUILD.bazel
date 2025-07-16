@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "ca_ES_VALENCIA",
+    srcs = ["ca_ES_VALENCIA.go"],
+    importpath = "github.com/go-playground/locales/ca_ES_VALENCIA",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":ca_ES_VALENCIA",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "ca_ES_VALENCIA_test",
+    srcs = ["ca_ES_VALENCIA_test.go"],
+    embed = [":ca_ES_VALENCIA"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

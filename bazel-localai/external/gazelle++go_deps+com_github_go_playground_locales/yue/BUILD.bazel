@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "yue",
+    srcs = ["yue.go"],
+    importpath = "github.com/go-playground/locales/yue",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":yue",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "yue_test",
+    srcs = ["yue_test.go"],
+    embed = [":yue"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

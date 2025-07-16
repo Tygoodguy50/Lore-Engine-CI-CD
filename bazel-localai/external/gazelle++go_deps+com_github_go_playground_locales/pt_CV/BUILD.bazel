@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "pt_CV",
+    srcs = ["pt_CV.go"],
+    importpath = "github.com/go-playground/locales/pt_CV",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":pt_CV",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "pt_CV_test",
+    srcs = ["pt_CV_test.go"],
+    embed = [":pt_CV"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

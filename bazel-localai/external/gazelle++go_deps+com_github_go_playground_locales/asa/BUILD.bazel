@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "asa",
+    srcs = ["asa.go"],
+    importpath = "github.com/go-playground/locales/asa",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":asa",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "asa_test",
+    srcs = ["asa_test.go"],
+    embed = [":asa"],
+    deps = [
+        "//:locales",
+        "//currency",
+    ],
+)

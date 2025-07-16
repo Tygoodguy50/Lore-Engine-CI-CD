@@ -1,0 +1,22 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "gin-upgrading-overriding_lib",
+    srcs = [
+        "main.go",
+        "v8_to_v9.go",
+    ],
+    importpath = "github.com/go-playground/validator/v10/_examples/gin-upgrading-overriding",
+    importpath_aliases = ["github.com/go-playground/validator/_examples/gin-upgrading-overriding"],
+    visibility = ["//visibility:private"],
+    deps = [
+        "//:validator",
+        "@com_github_gin_gonic_gin//binding",
+    ],
+)
+
+go_binary(
+    name = "gin-upgrading-overriding",
+    embed = [":gin-upgrading-overriding_lib"],
+    visibility = ["//visibility:public"],
+)
