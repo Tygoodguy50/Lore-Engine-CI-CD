@@ -6,6 +6,7 @@ go_library(
     importpath = "github.com/mudler/LocalAI/cmd/local-ai",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/hooks:hooks",
         "@com_github_gin_gonic_gin//:gin",
         "@com_github_pkg_errors//:errors",
         "@com_github_spf13_cobra//:cobra",
