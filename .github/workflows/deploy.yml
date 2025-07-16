@@ -26,6 +26,12 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: 🧹 Clear cache directories
+      run: |
+        sudo rm -rf ~/.cache/bazel ~/.cache/bazelisk || true
+        mkdir -p ~/.cache/bazel ~/.cache/bazelisk
+      continue-on-error: true
+
     - name: 🏗️ Setup Go
       uses: actions/setup-go@v4
       with:
@@ -42,9 +48,11 @@ jobs:
         path: |
           ~/.cache/bazel
           ~/.cache/bazelisk
-        key: ${{ runner.os }}-bazel-${{ hashFiles('**/BUILD.bazel', '**/WORKSPACE', '**/MODULE.bazel') }}
+        key: ${{ runner.os }}-bazel-${{ github.sha }}
         restore-keys: |
+          ${{ runner.os }}-bazel-${{ hashFiles('**/BUILD.bazel', '**/WORKSPACE', '**/MODULE.bazel') }}
           ${{ runner.os }}-bazel-
+      continue-on-error: true
 
     - name: 🔍 Lint Go code
       run: |
@@ -347,6 +355,7 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
+        platforms: linux/amd64
 
   # Performance testing
   performance-test:
