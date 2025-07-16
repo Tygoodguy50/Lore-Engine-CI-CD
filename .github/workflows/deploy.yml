@@ -50,25 +50,45 @@ jobs:
       with:
         bazelisk-version: 1.20.0
 
-    - name: 🧹 Clear all Bazel cache completely
+    - name: 🧹 Clear all Bazel cache completely and configure cache-free environment
       run: |
-        echo "Clearing all Bazel cache directories..."
+        echo "Clearing all Bazel cache directories and configuration..."
         sudo rm -rf ~/.cache/bazel ~/.cache/bazelisk || true
         sudo rm -rf /tmp/bazel* || true
         sudo rm -rf ~/.bazel* || true
         rm -rf bazel-* || true
+        
+        # Remove any existing Bazel configuration that might enable caching
+        rm -rf ~/.bazelrc || true
+        
+        # Create a strict no-cache .bazelrc
+        echo "# Strict no-cache configuration" > ~/.bazelrc
+        echo "build --disk_cache=" >> ~/.bazelrc
+        echo "build --repository_cache=" >> ~/.bazelrc
+        echo "build --noremote_cache" >> ~/.bazelrc
+        echo "build --noremote_upload_local_results" >> ~/.bazelrc
+        echo "build --noremote_download_outputs" >> ~/.bazelrc
+        echo "build --noremote_accept_cached" >> ~/.bazelrc
+        echo "test --disk_cache=" >> ~/.bazelrc
+        echo "test --repository_cache=" >> ~/.bazelrc
+        echo "test --noremote_cache" >> ~/.bazelrc
+        echo "test --noremote_upload_local_results" >> ~/.bazelrc
+        echo "test --noremote_download_outputs" >> ~/.bazelrc
+        echo "test --noremote_accept_cached" >> ~/.bazelrc
+        
         echo "Creating fresh cache directories..."
         mkdir -p ~/.cache/bazel ~/.cache/bazelisk
-        echo "Cache clearing complete"
+        echo "Cache clearing and configuration complete"
       continue-on-error: true
 
-    - name:  Debug cache status
+    - name: 🔍 Debug cache status
       run: |
         echo "Cache enabled: ${{ env.CACHE_ENABLED }}"
         echo "Caching is disabled - no cache steps will run"
+        echo "Bazel configuration:"
+        cat ~/.bazelrc || echo "No .bazelrc found"
         echo "Cache directories:"
         ls -la ~/.cache/ || echo "No cache directory found"
-        mkdir -p ~/.cache/bazel ~/.cache/bazelisk
         echo "Cache directories created successfully"
       continue-on-error: true
 
@@ -81,27 +101,56 @@ jobs:
           exit 1
         fi
 
+    - name: 🔍 Pre-build environment check
+      run: |
+        echo "=== Pre-build Environment Check ==="
+        echo "Bazel version: $(bazel version | head -1)"
+        echo "Go version: $(go version)"
+        echo "Working directory: $(pwd)"
+        echo "Available disk space: $(df -h . | tail -1)"
+        echo "Bazel configuration:"
+        cat ~/.bazelrc || echo "No .bazelrc found"
+        echo "Environment variables:"
+        env | grep -E "CACHE|BAZEL" || echo "No cache/bazel env vars found"
+        echo "=== End Environment Check ==="
+      continue-on-error: true
+
     - name: 🧪 Run tests
       run: |
-        echo "Running Bazel tests with cache disabled..."
+        echo "Running Bazel tests with all caching completely disabled..."
         bazel test //... \
           --disk_cache= \
           --repository_cache= \
           --noremote_cache \
           --noremote_upload_local_results \
+          --noremote_download_outputs \
+          --noremote_accept_cached \
           --verbose_failures \
           --test_output=errors
       continue-on-error: false
 
     - name: 🔨 Build application
       run: |
-        echo "Building with Bazel with cache disabled..."
+        echo "Building with Bazel with all caching completely disabled..."
+        echo "Build command: bazel build //:local-ai --disk_cache= --repository_cache= --noremote_cache --noremote_upload_local_results --noremote_download_outputs --noremote_accept_cached --verbose_failures"
         bazel build //:local-ai \
           --disk_cache= \
           --repository_cache= \
           --noremote_cache \
           --noremote_upload_local_results \
-          --verbose_failures
+          --noremote_download_outputs \
+          --noremote_accept_cached \
+          --verbose_failures || {
+            echo "=== BUILD FAILED ==="
+            echo "Bazel build failed. Checking for cache-related issues..."
+            echo "Cache directories:"
+            ls -la ~/.cache/ || echo "No cache directory found"
+            echo "Bazel config:"
+            cat ~/.bazelrc || echo "No .bazelrc found"
+            echo "Bazel info:"
+            bazel info || echo "Bazel info failed"
+            exit 1
+          }
         
     - name: 🔍 Verify build artifacts
       run: |
@@ -201,6 +250,8 @@ jobs:
           --repository_cache= \
           --noremote_cache \
           --noremote_upload_local_results \
+          --noremote_download_outputs \
+          --noremote_accept_cached \
           --verbose_failures
 
     - name: 🚀 Deploy to staging server
@@ -288,6 +339,8 @@ jobs:
           --repository_cache= \
           --noremote_cache \
           --noremote_upload_local_results \
+          --noremote_download_outputs \
+          --noremote_accept_cached \
           --verbose_failures
 
     - name: 🏗️ Create deployment package
