@@ -142,18 +142,99 @@ gh run view --repo YOUR_REPO
 - Use environment protection rules for production
 - Monitor GitHub Actions logs for security issues
 
+## 🔧 Troubleshooting
+
+### Cache Service 400 Errors
+
+If you encounter "Cache service responded with 400" errors:
+
+1. **Check Cache Configuration**:
+
+   ```yaml
+   env:
+     CACHE_ENABLED: 'false'  # Ensure this is set to 'false'
+   ```
+
+2. **Verify No Cache Actions**:
+   - Look for `actions/cache@v4` steps in your workflow
+   - Ensure they are either removed or properly conditionally skipped
+   - Check Docker build cache configuration
+
+3. **Common Solutions**:
+
+   ```bash
+   # Option 1: Disable caching completely (recommended)
+   env:
+     CACHE_ENABLED: 'false'
+   
+   # Option 2: Remove cache steps entirely
+   # Delete any steps using actions/cache@v4
+   
+   # Option 3: Check Docker build cache
+   # Ensure Docker builds don't use cache-from/cache-to when disabled
+   ```
+
+### Workflow Validation Errors
+
+If GitHub Actions reports syntax errors:
+
+1. **Check Environment Variables**:
+
+   ```yaml
+   # ❌ Invalid
+   env:
+     CACHE_ENABLED: ${{ env.CACHE_ENABLED }}
+   
+   # ✅ Valid
+   env:
+     CACHE_ENABLED: 'false'
+   ```
+
+2. **Validate YAML Syntax**:
+
+   ```bash
+   # Use a YAML validator or GitHub's workflow syntax checker
+   ```
+
+### SSH Connection Issues
+
+If deployment fails with SSH errors:
+
+1. **Test SSH Access**:
+
+   ```bash
+   ssh -i ~/.ssh/lore-engine-prod ubuntu@YOUR_HOST "echo 'Connection works'"
+   ```
+
+2. **Check Key Permissions**:
+
+   ```bash
+   chmod 600 ~/.ssh/lore-engine-prod
+   chmod 600 ~/.ssh/lore-engine-staging
+   ```
+
+3. **Verify Server Configuration**:
+
+   ```bash
+   # On target server
+   cat ~/.ssh/authorized_keys
+   chmod 600 ~/.ssh/authorized_keys
+   ```
+
 ## ✅ Success Criteria
 
 Your secrets are properly configured when:
+
 - [ ] All required secrets show up in `gh secret list`
 - [ ] SSH access works to both servers
 - [ ] Discord webhook responds to test messages
 - [ ] GitHub Actions workflow runs without errors
 - [ ] Deployment completes successfully
 
-## 🔮 Ready to Deploy!
+## 🔮 Ready to Deploy
 
 Once all secrets are configured:
+
 1. Run `.\setup-deployment.ps1 -Environment production`
 2. Push code to trigger deployment
 3. Monitor GitHub Actions and Discord for progress
