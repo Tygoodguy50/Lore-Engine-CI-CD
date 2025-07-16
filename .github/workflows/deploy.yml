@@ -34,7 +34,7 @@ jobs:
     - name: 🔧 Setup Bazel
       uses: bazelbuild/setup-bazelisk@v2
       with:
-        bazelisk-version: latest
+        bazelisk-version: 1.19.0
 
     - name: 📦 Cache Bazel
       uses: actions/cache@v4
@@ -142,6 +142,8 @@ jobs:
 
     - name: 🔧 Setup Bazel
       uses: bazelbuild/setup-bazelisk@v2
+      with:
+        bazelisk-version: 1.19.0
 
     - name: 🔨 Build for staging
       run: |
@@ -220,6 +222,8 @@ jobs:
 
     - name: 🔧 Setup Bazel
       uses: bazelbuild/setup-bazelisk@v2
+      with:
+        bazelisk-version: 1.19.0
 
     - name: 🔨 Build for production
       run: |
