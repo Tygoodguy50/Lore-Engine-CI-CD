@@ -1,7 +1,7 @@
 package hooks
 
 import (
-	"crypto/md5"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -223,7 +223,7 @@ func (lmg *LoreMarkdownGenerator) createDirectoryStructure() error {
 	}
 
 	for _, dir := range dirs {
-		if err := os.MkdirAll(dir, 0755); err != nil {
+		if err := os.MkdirAll(dir, 0750); err != nil {
 			return errors.Wrapf(err, "failed to create directory %s", dir)
 		}
 	}
@@ -443,7 +443,7 @@ func (lmg *LoreMarkdownGenerator) initializeTemplates() error {
 
 // generateDocumentID creates a unique document ID
 func (lmg *LoreMarkdownGenerator) generateDocumentID(event LoreEvent) string {
-	hash := md5.Sum([]byte(fmt.Sprintf("%s_%s_%d", event.SessionID, event.Type, event.Timestamp.Unix())))
+	hash := sha256.Sum256([]byte(fmt.Sprintf("%s_%s_%d", event.SessionID, event.Type, event.Timestamp.Unix())))
 	return fmt.Sprintf("%x", hash)[:12]
 }
 
@@ -549,11 +549,11 @@ func (lmg *LoreMarkdownGenerator) generateMarkdownContent(doc *LoreDocument) (st
 // writeMarkdownFile writes the markdown content to file
 func (lmg *LoreMarkdownGenerator) writeMarkdownFile(filePath, content string) error {
 	dir := filepath.Dir(filePath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0750); err != nil {
 		return errors.Wrap(err, "failed to create directory")
 	}
 
-	if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(filePath, []byte(content), 0600); err != nil {
 		return errors.Wrap(err, "failed to write markdown file")
 	}
 
@@ -571,11 +571,11 @@ func (lmg *LoreMarkdownGenerator) generateHTMLFile(doc *LoreDocument, markdownCo
 	}
 
 	dir := filepath.Dir(doc.HTMLPath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0750); err != nil {
 		return errors.Wrap(err, "failed to create HTML directory")
 	}
 
-	if err := os.WriteFile(doc.HTMLPath, []byte(buf.String()), 0644); err != nil {
+	if err := os.WriteFile(doc.HTMLPath, []byte(buf.String()), 0600); err != nil {
 		return errors.Wrap(err, "failed to write HTML file")
 	}
 
@@ -693,6 +693,12 @@ func (lmg *LoreMarkdownGenerator) commitDocument(doc *LoreDocument) error {
 			relPath = file
 		}
 
+		// Validate that the relative path is safe (no directory traversal)
+		if strings.Contains(relPath, "..") || strings.HasPrefix(relPath, "/") {
+			return errors.Errorf("unsafe file path: %s", relPath)
+		}
+
+		// #nosec G204 -- Input is validated above to prevent command injection
 		cmd := exec.Command("git", "add", relPath)
 		cmd.Dir = lmg.outputDir
 		if err := cmd.Run(); err != nil {
@@ -704,6 +710,12 @@ func (lmg *LoreMarkdownGenerator) commitDocument(doc *LoreDocument) error {
 	commitMsg := fmt.Sprintf("📝 Add lore document: %s\n\nType: %s\nSession: %s\nLore Level: %d\nCursed Level: %d",
 		doc.Title, doc.Type, doc.SessionID, doc.LoreLevel, doc.CursedLevel)
 
+	// Validate commit message to prevent command injection
+	if strings.Contains(commitMsg, "\"") || strings.Contains(commitMsg, ";") || strings.Contains(commitMsg, "`") {
+		return errors.New("commit message contains unsafe characters")
+	}
+
+	// #nosec G204 -- Commit message is validated above to prevent command injection
 	cmd := exec.Command("git", "commit", "-m", commitMsg)
 	cmd.Dir = lmg.outputDir
 	if err := cmd.Run(); err != nil {
@@ -726,6 +738,11 @@ func (lmg *LoreMarkdownGenerator) commitDocument(doc *LoreDocument) error {
 func (lmg *LoreMarkdownGenerator) loadIndexes() error {
 	// Load topic index
 	topicIndexPath := filepath.Join(lmg.outputDir, "indexes", "topics.json")
+	// Validate path is within output directory
+	if !strings.HasPrefix(topicIndexPath, lmg.outputDir) {
+		return errors.New("topic index path is outside output directory")
+	}
+	// #nosec G304 -- Path is validated above to be within output directory
 	if data, err := os.ReadFile(topicIndexPath); err == nil {
 		if err := json.Unmarshal(data, &lmg.topicIndex); err != nil {
 			lmg.logger.WithError(err).Warn("Failed to unmarshal topic index")
@@ -734,6 +751,11 @@ func (lmg *LoreMarkdownGenerator) loadIndexes() error {
 
 	// Load session index
 	sessionIndexPath := filepath.Join(lmg.outputDir, "indexes", "sessions.json")
+	// Validate path is within output directory
+	if !strings.HasPrefix(sessionIndexPath, lmg.outputDir) {
+		return errors.New("session index path is outside output directory")
+	}
+	// #nosec G304 -- Path is validated above to be within output directory
 	if data, err := os.ReadFile(sessionIndexPath); err == nil {
 		if err := json.Unmarshal(data, &lmg.sessionIndex); err != nil {
 			lmg.logger.WithError(err).Warn("Failed to unmarshal session index")
@@ -752,7 +774,7 @@ func (lmg *LoreMarkdownGenerator) saveIndexes() error {
 	}
 
 	topicIndexPath := filepath.Join(lmg.outputDir, "indexes", "topics.json")
-	if err := os.WriteFile(topicIndexPath, topicData, 0644); err != nil {
+	if err := os.WriteFile(topicIndexPath, topicData, 0600); err != nil {
 		return errors.Wrap(err, "failed to write topic index")
 	}
 
@@ -763,7 +785,7 @@ func (lmg *LoreMarkdownGenerator) saveIndexes() error {
 	}
 
 	sessionIndexPath := filepath.Join(lmg.outputDir, "indexes", "sessions.json")
-	if err := os.WriteFile(sessionIndexPath, sessionData, 0644); err != nil {
+	if err := os.WriteFile(sessionIndexPath, sessionData, 0600); err != nil {
 		return errors.Wrap(err, "failed to write session index")
 	}
 

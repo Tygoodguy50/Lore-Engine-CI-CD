@@ -2,14 +2,45 @@ package hooks
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
-	"math/rand"
+	"math/big"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
 )
+
+// Secure random helper functions
+func secureRandomInt(max int) int {
+	if max <= 0 {
+		return 0
+	}
+	n, err := rand.Int(rand.Reader, big.NewInt(int64(max)))
+	if err != nil {
+		// Fallback to timestamp-based seed if crypto/rand fails
+		return int(time.Now().UnixNano()) % max
+	}
+	return int(n.Int64())
+}
+
+func secureRandomFloat64() float64 {
+	// Generate random bytes and convert to float64
+	bytes := make([]byte, 8)
+	_, err := rand.Read(bytes)
+	if err != nil {
+		// Fallback to timestamp-based randomness
+		return float64(time.Now().UnixNano()%1000) / 1000.0
+	}
+	
+	// Convert bytes to uint64 and then to float64 between 0 and 1
+	var value uint64
+	for i, b := range bytes {
+		value |= uint64(b) << (8 * i)
+	}
+	return float64(value) / float64(^uint64(0))
+}
 
 // InteractiveLoreLooper handles re-entrant content for remix, mutation, and escalation
 type InteractiveLoreLooper struct {
@@ -573,7 +604,7 @@ func (ill *InteractiveLoreLooper) isUserInCooldown(userID string) bool {
 }
 
 func (ill *InteractiveLoreLooper) generateLoopID() string {
-	return fmt.Sprintf("loop_%d_%d", time.Now().UnixNano(), rand.Intn(1000))
+	return fmt.Sprintf("loop_%d_%d", time.Now().UnixNano(), secureRandomInt(1000))
 }
 
 func (ill *InteractiveLoreLooper) processLoop(loop *ActiveLoop) {
@@ -650,7 +681,7 @@ func (ill *InteractiveLoreLooper) performLoopIteration(loop *ActiveLoop) LoopRes
 		result.Success = false
 	}
 
-	result.EngagementScore = rand.Float64() * 10.0 // Simulate engagement
+	result.EngagementScore = secureRandomFloat64() * 10.0 // Simulate engagement
 
 	return result
 }
@@ -658,7 +689,7 @@ func (ill *InteractiveLoreLooper) performLoopIteration(loop *ActiveLoop) LoopRes
 func (ill *InteractiveLoreLooper) applyMutation(content string) string {
 	// Apply mutation rules
 	for _, rule := range ill.mutationRules {
-		if rule.Enabled && rand.Float64() < rule.Probability {
+		if rule.Enabled && secureRandomFloat64() < rule.Probability {
 			// Simple pattern replacement (in reality, this would be more sophisticated)
 			content = strings.ReplaceAll(content, rule.Pattern, rule.Replacement)
 		}
@@ -666,8 +697,8 @@ func (ill *InteractiveLoreLooper) applyMutation(content string) string {
 
 	// Add random cursed words
 	cursedWords := []string{"eldritch", "abyssal", "profane", "blasphemous", "malevolent"}
-	if rand.Float64() < 0.3 {
-		word := cursedWords[rand.Intn(len(cursedWords))]
+	if secureRandomFloat64() < 0.3 {
+		word := cursedWords[secureRandomInt(len(cursedWords))]
 		content = word + " " + content
 	}
 
@@ -686,7 +717,7 @@ func (ill *InteractiveLoreLooper) applyRemix(content string) string {
 
 func (ill *InteractiveLoreLooper) tryRemixPatterns(content string) string {
 	for _, pattern := range ill.remixPatterns {
-		if !pattern.Enabled || rand.Float64() >= 0.4 {
+		if !pattern.Enabled || secureRandomFloat64() >= 0.4 {
 			continue
 		}
 
@@ -718,7 +749,7 @@ func (ill *InteractiveLoreLooper) shuffleWords(content string) string {
 
 	// Shuffle middle words only
 	for i := 1; i < len(words)-1; i++ {
-		j := rand.Intn(len(words)-2) + 1
+		j := secureRandomInt(len(words)-2) + 1
 		words[i], words[j] = words[j], words[i]
 	}
 	return strings.Join(words, " ")
@@ -729,8 +760,8 @@ func (ill *InteractiveLoreLooper) applyEscalation(content string) string {
 	escalationPrefixes := []string{"BEHOLD!", "WITNESS!", "TREMBLE!", "FEAR!", "DESPAIR!"}
 	escalationSuffixes := []string{"...and it grows stronger!", "...the horror spreads!", "...reality bends!", "...chaos reigns!"}
 
-	prefix := escalationPrefixes[rand.Intn(len(escalationPrefixes))]
-	suffix := escalationSuffixes[rand.Intn(len(escalationSuffixes))]
+	prefix := escalationPrefixes[secureRandomInt(len(escalationPrefixes))]
+	suffix := escalationSuffixes[secureRandomInt(len(escalationSuffixes))]
 
 	return prefix + " " + strings.ToUpper(content) + " " + suffix
 }

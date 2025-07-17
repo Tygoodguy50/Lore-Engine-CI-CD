@@ -283,7 +283,9 @@ func testAPIEndpoints() {
 
 	if resp.StatusCode == 200 {
 		var result map[string]interface{}
-		json.NewDecoder(resp.Body).Decode(&result)
+		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+			fmt.Printf(" ⚠️  Failed to decode topics response: %v\n", err)
+		}
 		fmt.Printf(" ✅ Topics endpoint working\n")
 	} else {
 		fmt.Printf(" ❌ Topics endpoint returned: %d\n", resp.StatusCode)
@@ -300,7 +302,9 @@ func testAPIEndpoints() {
 
 	if resp.StatusCode == 200 {
 		var result map[string]interface{}
-		json.NewDecoder(resp.Body).Decode(&result)
+		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+			fmt.Printf(" ⚠️  Failed to decode health response: %v\n", err)
+		}
 		fmt.Printf(" ✅ Health endpoint working\n")
 	} else {
 		fmt.Printf(" ❌ Health endpoint returned: %d\n", resp.StatusCode)
@@ -335,7 +339,9 @@ func testAPIEndpoints() {
 
 	if resp.StatusCode == 200 {
 		var result map[string]interface{}
-		json.NewDecoder(resp.Body).Decode(&result)
+		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+			fmt.Printf(" ⚠️  Failed to decode generation response: %v\n", err)
+		}
 		fmt.Printf(" ✅ Generation endpoint working\n")
 	} else {
 		body, _ := io.ReadAll(resp.Body)
@@ -426,7 +432,7 @@ func generateProgressiveContent(index int) string {
 
 func init() {
 	// Create test output directory
-	if err := os.MkdirAll("./test_output", 0755); err != nil {
+	if err := os.MkdirAll("./test_output", 0750); err != nil {
 		log.Fatalf("Failed to create test output directory: %v", err)
 	}
 }

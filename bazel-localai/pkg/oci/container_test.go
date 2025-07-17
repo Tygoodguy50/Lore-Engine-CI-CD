@@ -11,6 +11,9 @@ func TestContainerBasic(t *testing.T) {
 	// Basic test to ensure the package builds and testify works
 	assert.True(t, true, "Basic assertion should pass")
 	require.NotNil(t, t, "Test context should not be nil")
+
+	// Verify testify is working correctly
+	assert.Equal(t, "test", "test", "String equality should work")
 }
 
 func TestContainerImageName(t *testing.T) {
