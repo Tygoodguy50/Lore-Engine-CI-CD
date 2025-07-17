@@ -3,10 +3,17 @@
 # Disable CGO by default to avoid C++ toolchain issues
 build --action_env=CGO_ENABLED=0
 
-# Use pure Go builds
+# Default to Linux for CI compatibility, can be overridden locally
 build --platforms=@rules_go//go/toolchain:linux_amd64
-build --platforms=@rules_go//go/toolchain:darwin_amd64
-build --platforms=@rules_go//go/toolchain:windows_amd64
+
+# CI-specific configuration
+build:ci --platforms=@rules_go//go/toolchain:linux_amd64
+build:ci --action_env=CGO_ENABLED=0
+
+# Local development configurations
+build:windows --platforms=@rules_go//go/toolchain:windows_amd64
+build:darwin --platforms=@rules_go//go/toolchain:darwin_amd64
+build:linux --platforms=@rules_go//go/toolchain:linux_amd64
 
 # Enable Bzlmod
 common --enable_bzlmod
