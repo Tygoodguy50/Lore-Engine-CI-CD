@@ -1,4 +1,4 @@
-package main
+package test
 
 import (
 	"bytes"
@@ -317,7 +317,7 @@ func min(a, b int) int {
 	return b
 }
 
-func main() {
+func TestConflictSystemMain() {
 	fmt.Println("🧪 Multi-Agent Lore Conflict Detection System - Test Suite")
 	fmt.Println("================================================================================")
 

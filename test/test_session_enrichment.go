@@ -1,4 +1,4 @@
-package main
+package test
 
 import (
 	"bytes"
@@ -308,6 +308,6 @@ func runSessionEnrichmentTests() {
 	fmt.Println("\n🎯 Session enrichment testing completed!")
 }
 
-func main() {
+func TestSessionEnrichmentMain() {
 	runSessionEnrichmentTests()
 }

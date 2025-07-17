@@ -1,4 +1,4 @@
-package main
+package test
 
 import (
 	"bytes"
@@ -15,7 +15,7 @@ import (
 )
 
 // TestMarkdownGenerator validates the enhanced markdown generator functionality
-func main() {
+func TestMarkdownGeneratorMain() {
 	fmt.Println("🔮 Testing Enhanced Lore Markdown Generator")
 	fmt.Println(strings.Repeat("=", 50))
 
