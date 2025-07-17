@@ -1,0 +1,5 @@
+# Bazel build artifacts
+bazel-*
+/bazel-out/
+/bazel-bin/
+/bazel-testlogs/
