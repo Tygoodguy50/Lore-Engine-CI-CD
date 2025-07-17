@@ -89,13 +89,13 @@ jobs:
         echo "# Strict no-cache configuration" > ~/.bazelrc
         echo "build --disk_cache=" >> ~/.bazelrc
         echo "build --repository_cache=" >> ~/.bazelrc
-        echo "build --noremote_cache" >> ~/.bazelrc
+        echo "build --remote_cache=" >> ~/.bazelrc
         echo "build --noremote_upload_local_results" >> ~/.bazelrc
         echo "build --noremote_download_outputs" >> ~/.bazelrc
         echo "build --noremote_accept_cached" >> ~/.bazelrc
         echo "test --disk_cache=" >> ~/.bazelrc
         echo "test --repository_cache=" >> ~/.bazelrc
-        echo "test --noremote_cache" >> ~/.bazelrc
+        echo "test --remote_cache=" >> ~/.bazelrc
         echo "test --noremote_upload_local_results" >> ~/.bazelrc
         echo "test --noremote_download_outputs" >> ~/.bazelrc
         echo "test --noremote_accept_cached" >> ~/.bazelrc
@@ -145,7 +145,7 @@ jobs:
         bazel test //... \
           --disk_cache= \
           --repository_cache= \
-          --noremote_cache \
+          --remote_cache= \
           --noremote_upload_local_results \
           --noremote_download_outputs \
           --noremote_accept_cached \
@@ -156,11 +156,11 @@ jobs:
     - name: 🔨 Build application
       run: |
         echo "Building with Bazel with all caching completely disabled..."
-        echo "Build command: bazel build //:local-ai --disk_cache= --repository_cache= --noremote_cache --noremote_upload_local_results --noremote_download_outputs --noremote_accept_cached --verbose_failures"
+        echo "Build command: bazel build //:local-ai --disk_cache= --repository_cache= --remote_cache= --noremote_upload_local_results --noremote_download_outputs --noremote_accept_cached --verbose_failures"
         bazel build //:local-ai \
           --disk_cache= \
           --repository_cache= \
-          --noremote_cache \
+          --remote_cache= \
           --noremote_upload_local_results \
           --noremote_download_outputs \
           --noremote_accept_cached \
@@ -293,7 +293,7 @@ jobs:
         bazel build //:local-ai \
           --disk_cache= \
           --repository_cache= \
-          --noremote_cache \
+          --remote_cache= \
           --noremote_upload_local_results \
           --noremote_download_outputs \
           --noremote_accept_cached \
@@ -403,7 +403,7 @@ jobs:
         bazel build //:local-ai --config=release \
           --disk_cache= \
           --repository_cache= \
-          --noremote_cache \
+          --remote_cache= \
           --noremote_upload_local_results \
           --noremote_download_outputs \
           --noremote_accept_cached \
