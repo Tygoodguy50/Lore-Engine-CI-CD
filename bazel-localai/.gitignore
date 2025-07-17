@@ -1,0 +1,7 @@
+# Bazel build artifacts
+bazel-bin/
+bazel-out/
+bazel-testlogs/
+# Exclude the workspace directory but allow bazel-localai source files
+!bazel-localai/.bazelrc
+!bazel-localai/.github/

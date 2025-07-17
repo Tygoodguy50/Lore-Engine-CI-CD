@@ -18,4 +18,6 @@ go_binary(
     name = "local-ai",
     embed = [":local-ai_lib"],
     visibility = ["//visibility:public"],
+    pure = "on",  # Force pure Go build
+    static = "on",  # Static linking
 )

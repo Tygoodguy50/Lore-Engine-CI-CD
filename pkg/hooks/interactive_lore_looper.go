@@ -33,7 +33,7 @@ func secureRandomFloat64() float64 {
 		// Fallback to timestamp-based randomness
 		return float64(time.Now().UnixNano()%1000) / 1000.0
 	}
-	
+
 	// Convert bytes to uint64 and then to float64 between 0 and 1
 	var value uint64
 	for i, b := range bytes {
