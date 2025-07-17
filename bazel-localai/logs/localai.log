@@ -1,0 +1,8 @@
+Error: unknown flag: --config-file
+Usage:
+  local-ai [flags]
+
+Flags:
+  -h, --help   help for local-ai
+
+2025/07/15 19:12:21 failed to execute command: unknown flag: --config-file

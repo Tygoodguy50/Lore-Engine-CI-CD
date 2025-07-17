@@ -1,0 +1,14 @@
+# Ignore large build outputs and symlinks
+bazel-*
+test_output/
+logs/
+models/
+.git/
+.github/
+kubernetes/
+*.md
+*.txt
+*.ps1
+*.bat
+MODULE.bazel.lock
+*.log

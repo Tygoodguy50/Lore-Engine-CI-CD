@@ -24,4 +24,19 @@ go_binary(
     name = "local-ai",
     embed = ["//cmd/local-ai:local-ai_lib"],
     visibility = ["//visibility:public"],
+    gc_linkopts = select({
+        "//conditions:default": [],
+        ":release": [
+            "-s",
+            "-w",
+            "-X main.version={STABLE_GIT_COMMIT}",
+            "-X main.buildDate={DATE}",
+        ],
+    }),
+)
+
+# Release configuration
+config_setting(
+    name = "release",
+    values = {"compilation_mode": "opt"},
 )

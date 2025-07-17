@@ -28,7 +28,8 @@ spec:
     spec:
       containers:
       - name: lore-engine
-        image: ghcr.io/tygoodguy50/lore-engine-ci-cd:latest
+        image: lore-engine:latest
+        imagePullPolicy: Never
         ports:
         - containerPort: 8080
           name: http

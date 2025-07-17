@@ -1,0 +1,54 @@
+{
+  "observer_keys": [
+    {
+      "key": "obs_f67693f11cf673f276c370690cf95ab2",
+      "name": "community_dashboard",
+      "permissions": ["read_stats", "read_metrics"],
+      "rate_limit": {
+        "per_minute": 100,
+        "per_hour": 2000,
+        "per_day": 20000
+      },
+      "created": "2025-07-16T09:15:21Z",
+      "expires": "2026-07-16T09:15:21Z"
+    },
+    {
+      "key": "obs_f97c75f093290cebcfde7dd4cbb8e4b0",
+      "name": "researcher_access",
+      "permissions": ["read_stats", "read_metrics", "read_fragments"],
+      "rate_limit": {
+        "per_minute": 200,
+        "per_hour": 5000,
+        "per_day": 50000
+      },
+      "created": "2025-07-16T09:15:21Z",
+      "expires": "2026-07-16T09:15:21Z"
+    },
+    {
+      "key": "obs_2dabc246c2d31fdde870e33e54c31a8c",
+      "name": "content_creator",
+      "permissions": ["read_stats", "read_metrics", "read_fragments", "read_chains"],
+      "rate_limit": {
+        "per_minute": 300,
+        "per_hour": 10000,
+        "per_day": 100000
+      },
+      "created": "2025-07-16T09:15:21Z",
+      "expires": "2026-07-16T09:15:21Z"
+    }
+  ],
+  "admin_keys": [
+    {
+      "key": "admin_aba83d5b928dd8d5db3b0996b00697cb758056ce661b6979",
+      "name": "system_admin",
+      "permissions": ["full_access"],
+      "rate_limit": {
+        "per_minute": 1000,
+        "per_hour": 50000,
+        "per_day": 1000000
+      },
+      "created": "2025-07-16T09:15:21Z",
+      "expires": "2030-07-16T09:15:21Z"
+    }
+  ]
+}
