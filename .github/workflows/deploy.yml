@@ -243,6 +243,8 @@ jobs:
     - name: 🔐 Run Gosec Security Scanner
       run: |
         go install github.com/securego/gosec/v2/cmd/gosec@latest
+        echo "$HOME/go/bin" >> $GITHUB_PATH
+        export PATH=$PATH:$HOME/go/bin
         gosec -fmt sarif -out gosec.sarif ./...
 
     - name: 📊 Upload SARIF file
