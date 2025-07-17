@@ -1,4 +1,4 @@
-package main
+package test
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 )
 
 // 🔮 Test the Lore Dispatcher system
-func main() {
+func TestLoreDispatcherMain() {
 	baseURL := "http://localhost:8081"
 
 	fmt.Println("🕸️ Testing Lore Dispatcher System")
