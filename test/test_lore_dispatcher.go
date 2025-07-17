@@ -134,7 +134,9 @@ func checkStats(baseURL string) {
 
 	if resp.StatusCode == 200 {
 		var stats map[string]interface{}
-		json.NewDecoder(resp.Body).Decode(&stats)
+		if err := json.NewDecoder(resp.Body).Decode(&stats); err != nil {
+			fmt.Printf(" ⚠️  Failed to decode stats response: %v\n", err)
+		}
 
 		fmt.Printf("✅ Dispatcher Statistics Retrieved:\n")
 		fmt.Printf("   📊 Total Events: %.0f\n", stats["TotalEvents"])

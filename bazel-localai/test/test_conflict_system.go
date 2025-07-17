@@ -330,7 +330,9 @@ func TestConflictSystemMain() {
 	if err != nil {
 		log.Fatalf("❌ Server not available: %v", err)
 	}
-	resp.Body.Close()
+	if err := resp.Body.Close(); err != nil {
+		fmt.Printf(" ⚠️  Failed to close response body: %v\n", err)
+	}
 
 	if resp.StatusCode != http.StatusOK {
 		log.Fatalf("❌ Server health check failed: %d", resp.StatusCode)

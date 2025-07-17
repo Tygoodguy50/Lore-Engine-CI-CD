@@ -97,10 +97,10 @@ func (hh *HauntedHooks) ProcessEvent(event *HauntedEvent) error {
 	}).Info("🎭 Processing haunted event")
 
 	// Check lore triggers
-	for _, trigger := range hh.triggers {
-		if hh.matchesTrigger(event, &trigger) {
+	for i, trigger := range hh.triggers {
+		if hh.matchesTrigger(event, &hh.triggers[i]) {
 			hh.logger.WithField("trigger", trigger.Name).Info("🔮 Lore trigger activated")
-			return hh.executeTrigger(event, &trigger)
+			return hh.executeTrigger(event, &hh.triggers[i])
 		}
 	}
 

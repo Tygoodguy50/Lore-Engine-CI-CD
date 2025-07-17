@@ -67,7 +67,7 @@ func (mi *MarkdownInjector) Initialize(config map[string]interface{}) error {
 	}
 
 	// Ensure output directory exists
-	if err := os.MkdirAll(mi.outputDir, 0755); err != nil {
+	if err := os.MkdirAll(mi.outputDir, 0750); err != nil {
 		return errors.Wrap(err, "failed to create output directory")
 	}
 
@@ -198,12 +198,12 @@ func (mi *MarkdownInjector) handleHauntedChronicle(event *HauntedEvent) error {
 func (mi *MarkdownInjector) writeMarkdownFile(filePath string, content string, event *HauntedEvent) error {
 	// Ensure directory exists
 	dir := filepath.Dir(filePath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0750); err != nil {
 		return errors.Wrap(err, "failed to create directory")
 	}
 
 	// Write file
-	if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(filePath, []byte(content), 0600); err != nil {
 		return errors.Wrap(err, "failed to write markdown file")
 	}
 
