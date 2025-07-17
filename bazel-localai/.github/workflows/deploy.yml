@@ -233,6 +233,10 @@ jobs:
     name: 🔐 Security Scan
     runs-on: ubuntu-latest
     needs: build-and-test
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
     env:
       CACHE_ENABLED: 'false'
     
@@ -251,9 +255,10 @@ jobs:
         gosec -fmt sarif -out gosec.sarif -exclude-dir=bazel-bin -exclude-dir=bazel-out -exclude-dir=bazel-testlogs -exclude-dir=bazel-localai ./...
 
     - name: 📊 Upload SARIF file
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: gosec.sarif
+      continue-on-error: true
 
   # Deploy to staging
   deploy-staging:
@@ -269,7 +274,12 @@ jobs:
     - name: 📥 Checkout code
       uses: actions/checkout@v4
 
-    - name: 🔧 Setup Bazel (Manual installation to avoid cache issues)
+    - name: � Setup Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: �🔧 Setup Bazel (Manual installation to avoid cache issues)
       run: |
         echo "Installing Bazelisk manually to avoid cache service issues..."
         
@@ -306,6 +316,27 @@ jobs:
           --remote_accept_cached=false \
           --verbose_failures
 
+    - name: 📋 Validate deployment files
+      run: |
+        echo "Validating required deployment files..."
+        
+        # Check if binary was built
+        if [ ! -f "bazel-bin/local-ai" ]; then
+          echo "❌ Binary not found: bazel-bin/local-ai"
+          exit 1
+        fi
+        
+        # Check required deployment files
+        required_files=(".env.staging" "launch.sh" "deploy-community-api.sh")
+        for file in "${required_files[@]}"; do
+          if [ ! -f "$file" ]; then
+            echo "❌ Required file not found: $file"
+            exit 1
+          fi
+        done
+        
+        echo "✅ All required files validated"
+
     - name: 🚀 Deploy to staging server
       env:
         STAGING_HOST: ${{ secrets.STAGING_HOST }}
@@ -317,7 +348,14 @@ jobs:
         echo "$STAGING_KEY" > ~/.ssh/staging_key
         chmod 600 ~/.ssh/staging_key
         
+        # Test SSH connection
+        ssh -i ~/.ssh/staging_key -o StrictHostKeyChecking=no \
+          -o ConnectTimeout=10 \
+          $STAGING_USER@$STAGING_HOST \
+          "echo 'SSH connection successful'"
+        
         # Copy files to staging
+        echo "Copying deployment files to staging..."
         scp -i ~/.ssh/staging_key -o StrictHostKeyChecking=no \
           bazel-bin/local-ai \
           .env.staging \
@@ -325,45 +363,70 @@ jobs:
           deploy-community-api.sh \
           $STAGING_USER@$STAGING_HOST:/opt/lore-engine/
         
-        # Deploy on staging server
+        # Deploy on staging server with error handling
+        echo "Deploying to staging server..."
         ssh -i ~/.ssh/staging_key -o StrictHostKeyChecking=no \
           $STAGING_USER@$STAGING_HOST \
           "cd /opt/lore-engine && \
            chmod +x launch.sh deploy-community-api.sh local-ai && \
-           ./launch.sh --env=staging --build-only && \
-           sudo systemctl restart lore-engine-staging"
+           ./launch.sh --env=staging --build-only || { echo 'Launch script failed'; exit 1; } && \
+           sudo systemctl restart lore-engine-staging || { echo 'Service restart failed'; exit 1; } && \
+           echo 'Deployment completed successfully'"
 
     - name: 🧪 Run staging health check
       run: |
-        sleep 30
-        response=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.STAGING_HOST }}:8081/health)
-        if [ $response -eq 200 ]; then
-          echo "✅ Staging deployment successful"
-        else
-          echo "❌ Staging deployment failed (HTTP $response)"
-          exit 1
-        fi
+        echo "Running staging health check..."
+        max_attempts=6
+        attempt=1
+        
+        while [ $attempt -le $max_attempts ]; do
+          echo "Health check attempt $attempt/$max_attempts"
+          
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            --connect-timeout 10 \
+            --max-time 30 \
+            http://${{ secrets.STAGING_HOST }}:8081/health || echo "000")
+          
+          if [ "$response" -eq 200 ]; then
+            echo "✅ Staging deployment successful (HTTP $response)"
+            break
+          else
+            echo "⚠️ Health check failed (HTTP $response), attempt $attempt/$max_attempts"
+            if [ $attempt -eq $max_attempts ]; then
+              echo "❌ Staging deployment failed after $max_attempts attempts"
+              exit 1
+            fi
+            sleep 10
+          fi
+          
+          attempt=$((attempt + 1))
+        done
 
     - name: 📢 Notify Discord - Staging Deploy
       env:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
       run: |
-        curl -H "Content-Type: application/json" \
-        -d '{
-          "embeds": [{
-            "title": "🚀 Lore Engine Deployed to Staging",
-            "description": "New lore logic has been deployed to staging environment",
-            "color": 3447003,
-            "fields": [
-              {"name": "Environment", "value": "Staging", "inline": true},
-              {"name": "Commit", "value": "${{ github.sha }}", "inline": true},
-              {"name": "Branch", "value": "${{ github.ref_name }}", "inline": true},
-              {"name": "URL", "value": "http://${{ secrets.STAGING_HOST }}:8081", "inline": false}
-            ],
-            "footer": {"text": "Lore Engine CI/CD"}
-          }]
-        }' \
-        $DISCORD_WEBHOOK
+        if [ -n "$DISCORD_WEBHOOK" ]; then
+          curl -H "Content-Type: application/json" \
+          -d '{
+            "embeds": [{
+              "title": "🚀 Lore Engine Deployed to Staging",
+              "description": "New lore logic has been deployed to staging environment",
+              "color": 3447003,
+              "fields": [
+                {"name": "Environment", "value": "Staging", "inline": true},
+                {"name": "Commit", "value": "${{ github.sha }}", "inline": true},
+                {"name": "Branch", "value": "${{ github.ref_name }}", "inline": true},
+                {"name": "URL", "value": "http://${{ secrets.STAGING_HOST }}:8081", "inline": false}
+              ],
+              "footer": {"text": "Lore Engine CI/CD"}
+            }]
+          }' \
+          $DISCORD_WEBHOOK
+        else
+          echo "Discord webhook not configured, skipping notification"
+        fi
+      continue-on-error: true
 
   # Deploy to production
   deploy-production:
@@ -379,7 +442,12 @@ jobs:
     - name: 📥 Checkout code
       uses: actions/checkout@v4
 
-    - name: 🔧 Setup Bazel (Manual installation to avoid cache issues)
+    - name: � Setup Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: �🔧 Setup Bazel (Manual installation to avoid cache issues)
       run: |
         echo "Installing Bazelisk manually to avoid cache service issues..."
         
@@ -416,8 +484,39 @@ jobs:
           --remote_accept_cached=false \
           --verbose_failures
 
+    - name: 📋 Validate deployment files
+      run: |
+        echo "Validating required deployment files..."
+        
+        # Check if binary was built
+        if [ ! -f "bazel-bin/local-ai" ]; then
+          echo "❌ Binary not found: bazel-bin/local-ai"
+          exit 1
+        fi
+        
+        # Check required deployment files
+        required_files=(".env.production" "launch.sh" "deploy-community-api.sh")
+        for file in "${required_files[@]}"; do
+          if [ ! -f "$file" ]; then
+            echo "❌ Required file not found: $file"
+            exit 1
+          fi
+        done
+        
+        # Check required directories
+        required_dirs=("docs" "config" "public")
+        for dir in "${required_dirs[@]}"; do
+          if [ ! -d "$dir" ]; then
+            echo "❌ Required directory not found: $dir"
+            exit 1
+          fi
+        done
+        
+        echo "✅ All required files and directories validated"
+
     - name: 🏗️ Create deployment package
       run: |
+        echo "Creating deployment package..."
         mkdir -p deployment
         cp bazel-bin/local-ai deployment/
         cp .env.production deployment/
@@ -427,6 +526,11 @@ jobs:
         cp -r config deployment/
         cp -r public deployment/
         tar -czf lore-engine-${{ github.sha }}.tar.gz deployment/
+        
+        echo "Package contents:"
+        tar -tzf lore-engine-${{ github.sha }}.tar.gz
+        
+        echo "✅ Deployment package created successfully"
 
     - name: 📤 Upload deployment package
       uses: actions/upload-artifact@v4
@@ -445,53 +549,103 @@ jobs:
         echo "$PROD_KEY" > ~/.ssh/prod_key
         chmod 600 ~/.ssh/prod_key
         
+        # Test SSH connection
+        ssh -i ~/.ssh/prod_key -o StrictHostKeyChecking=no \
+          -o ConnectTimeout=10 \
+          $PROD_USER@$PROD_HOST \
+          "echo 'SSH connection successful'"
+        
+        # Create backup of current deployment
+        echo "Creating backup of current deployment..."
+        ssh -i ~/.ssh/prod_key -o StrictHostKeyChecking=no \
+          $PROD_USER@$PROD_HOST \
+          "cd /opt/lore-engine && \
+           if [ -f local-ai ]; then \
+             sudo cp local-ai local-ai.backup.$(date +%Y%m%d_%H%M%S); \
+           fi"
+        
         # Copy deployment package
+        echo "Transferring deployment package..."
         scp -i ~/.ssh/prod_key -o StrictHostKeyChecking=no \
           lore-engine-${{ github.sha }}.tar.gz \
           $PROD_USER@$PROD_HOST:/opt/lore-engine/
         
-        # Deploy on production server
+        # Deploy on production server with error handling
+        echo "Deploying to production server..."
         ssh -i ~/.ssh/prod_key -o StrictHostKeyChecking=no \
           $PROD_USER@$PROD_HOST \
           "cd /opt/lore-engine && \
-           tar -xzf lore-engine-${{ github.sha }}.tar.gz && \
-           cp deployment/* . && \
-           chmod +x launch.sh deploy-community-api.sh local-ai && \
-           ./launch.sh --health-check && \
-           sudo systemctl restart lore-engine-production"
+           tar -xzf lore-engine-${{ github.sha }}.tar.gz || { echo 'Package extraction failed'; exit 1; } && \
+           cp deployment/* . || { echo 'File copy failed'; exit 1; } && \
+           chmod +x launch.sh deploy-community-api.sh local-ai || { echo 'Permission setting failed'; exit 1; } && \
+           ./launch.sh --health-check || { echo 'Health check failed; restoring backup'; cp local-ai.backup.* local-ai 2>/dev/null || true; exit 1; } && \
+           sudo systemctl restart lore-engine-production || { echo 'Service restart failed; restoring backup'; cp local-ai.backup.* local-ai 2>/dev/null || true; sudo systemctl restart lore-engine-production; exit 1; } && \
+           echo 'Production deployment completed successfully'"
 
     - name: 🧪 Run production health check
       run: |
-        sleep 30
-        response=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.PROD_HOST }}:8080/health)
-        if [ $response -eq 200 ]; then
-          echo "✅ Production deployment successful"
-        else
-          echo "❌ Production deployment failed (HTTP $response)"
-          exit 1
-        fi
+        echo "Running production health check..."
+        max_attempts=6
+        attempt=1
+        
+        while [ $attempt -le $max_attempts ]; do
+          echo "Health check attempt $attempt/$max_attempts"
+          
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            --connect-timeout 10 \
+            --max-time 30 \
+            http://${{ secrets.PROD_HOST }}:8080/health || echo "000")
+          
+          if [ "$response" -eq 200 ]; then
+            echo "✅ Production deployment successful (HTTP $response)"
+            break
+          else
+            echo "⚠️ Health check failed (HTTP $response), attempt $attempt/$max_attempts"
+            if [ $attempt -eq $max_attempts ]; then
+              echo "❌ Production deployment failed after $max_attempts attempts"
+              # Attempt rollback
+              ssh -i ~/.ssh/prod_key -o StrictHostKeyChecking=no \
+                ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} \
+                "cd /opt/lore-engine && \
+                 if [ -f local-ai.backup.* ]; then \
+                   echo 'Rolling back to previous version...'; \
+                   cp local-ai.backup.* local-ai; \
+                   sudo systemctl restart lore-engine-production; \
+                 fi" || echo "Rollback failed"
+              exit 1
+            fi
+            sleep 10
+          fi
+          
+          attempt=$((attempt + 1))
+        done
 
     - name: 🎉 Notify Discord - Production Deploy
       env:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
       run: |
-        curl -H "Content-Type: application/json" \
-        -d '{
-          "embeds": [{
-            "title": "🔮 The Lore Engine Has Awakened!",
-            "description": "New lore logic has been deployed to production! The engine continues to evolve.",
-            "color": 10181046,
-            "fields": [
-              {"name": "Environment", "value": "Production", "inline": true},
-              {"name": "Commit", "value": "${{ github.sha }}", "inline": true},
-              {"name": "Branch", "value": "${{ github.ref_name }}", "inline": true},
-              {"name": "URL", "value": "http://${{ secrets.PROD_HOST }}:8080", "inline": false},
-              {"name": "Dashboard", "value": "http://${{ secrets.PROD_HOST }}:8080/dashboard", "inline": false}
-            ],
-            "footer": {"text": "Lore Engine CI/CD - Production Ready"}
-          }]
-        }' \
-        $DISCORD_WEBHOOK
+        if [ -n "$DISCORD_WEBHOOK" ]; then
+          curl -H "Content-Type: application/json" \
+          -d '{
+            "embeds": [{
+              "title": "🔮 The Lore Engine Has Awakened!",
+              "description": "New lore logic has been deployed to production! The engine continues to evolve.",
+              "color": 10181046,
+              "fields": [
+                {"name": "Environment", "value": "Production", "inline": true},
+                {"name": "Commit", "value": "${{ github.sha }}", "inline": true},
+                {"name": "Branch", "value": "${{ github.ref_name }}", "inline": true},
+                {"name": "URL", "value": "http://${{ secrets.PROD_HOST }}:8080", "inline": false},
+                {"name": "Dashboard", "value": "http://${{ secrets.PROD_HOST }}:8080/dashboard", "inline": false}
+              ],
+              "footer": {"text": "Lore Engine CI/CD - Production Ready"}
+            }]
+          }' \
+          $DISCORD_WEBHOOK
+        else
+          echo "Discord webhook not configured, skipping notification"
+        fi
+      continue-on-error: true
 
   # Container build and push
   container-build:

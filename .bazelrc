@@ -1,7 +1,14 @@
 # Bazel configuration for LocalAI
 
-# Disable CGO by default to avoid C++ toolchain issues
+# Disable CGO completely to avoid C++ toolchain issues
 build --action_env=CGO_ENABLED=0
+
+# Disable C++ toolchain resolution to avoid Windows SDK issues
+build --incompatible_enable_cc_toolchain_resolution=false
+
+# Additional flags to disable C++ toolchain usage
+build --strategy=GoCompile=standalone
+build --strategy=GoLink=standalone
 
 # Enable Bzlmod
 common --enable_bzlmod
@@ -13,9 +20,6 @@ build --local_resources=cpu=HOST_CPUS*0.75
 
 # Show detailed error messages
 build --verbose_failures
-
-# Use Go toolchain from rules_go
-build --incompatible_enable_cc_toolchain_resolution
 
 # Release configuration for production builds
 build:release --compilation_mode=opt

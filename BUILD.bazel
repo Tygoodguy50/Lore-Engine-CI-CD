@@ -24,6 +24,8 @@ go_binary(
     name = "local-ai",
     embed = ["//cmd/local-ai:local-ai_lib"],
     visibility = ["//visibility:public"],
+    pure = "on",  # Force pure Go build
+    static = "on",  # Static linking
     gc_linkopts = select({
         "//conditions:default": [],
         ":release": [

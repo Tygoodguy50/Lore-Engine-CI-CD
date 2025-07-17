@@ -7,6 +7,13 @@ module(
 bazel_dep(name = "rules_go", version = "0.46.0")
 bazel_dep(name = "gazelle", version = "0.35.0")
 
+# Configure Go rules with CGO disabled
+go_config = use_extension("@rules_go//go:extensions.bzl", "go_config")
+go_config.config(
+    cgo = False,
+    pure = True,
+)
+
 # Go dependencies extension
 go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
 go_deps.from_file(go_mod = "//:go.mod")
