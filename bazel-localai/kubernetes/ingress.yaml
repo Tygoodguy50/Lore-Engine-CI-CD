@@ -1,0 +1,66 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lore-engine-ingress
+  namespace: lore-engine
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: lore-engine.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: lore-engine-service
+            port:
+              number: 80
+      - path: /health
+        pathType: Exact
+        backend:
+          service:
+            name: lore-engine-service
+            port:
+              number: 80
+      - path: /lore
+        pathType: Prefix
+        backend:
+          service:
+            name: lore-engine-service
+            port:
+              number: 80
+      - path: /haunted
+        pathType: Prefix
+        backend:
+          service:
+            name: lore-engine-service
+            port:
+              number: 80
+---
+# For local development without ingress controller
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lore-engine-ingress-simple
+  namespace: lore-engine
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: lore-engine-service
+            port:
+              number: 80
