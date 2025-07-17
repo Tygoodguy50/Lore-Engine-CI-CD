@@ -11,11 +11,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  GO_VERSION: '1.    - name: ðŸ"Š Upload SARIF file
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: gosec.sarif
-      continue-on-error: true
+  GO_VERSION: '1.21'
   BAZEL_VERSION: '7.0.0'
   CACHE_ENABLED: 'false'
   ACTIONS_CACHE_URL: ''
@@ -262,6 +258,7 @@ jobs:
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: gosec.sarif
+      continue-on-error: true
 
   # Deploy to staging
   deploy-staging:
