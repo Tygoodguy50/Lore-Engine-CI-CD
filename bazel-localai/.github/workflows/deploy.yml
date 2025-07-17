@@ -141,8 +141,9 @@ jobs:
 
     - name: 🧪 Run tests
       run: |
-        echo "Running Bazel tests with all caching completely disabled..."
+        echo "Running Bazel tests with Linux platform configuration..."
         bazel test //... \
+          --config=ci \
           --disk_cache= \
           --repository_cache= \
           --remote_cache= \
@@ -155,9 +156,10 @@ jobs:
 
     - name: 🔨 Build application
       run: |
-        echo "Building with Bazel with all caching completely disabled..."
-        echo "Build command: bazel build //:local-ai --disk_cache= --repository_cache= --remote_cache= --remote_upload_local_results=false --remote_download_outputs=minimal --remote_accept_cached=false --verbose_failures"
+        echo "Building with Bazel with Linux platform configuration..."
+        echo "Build command: bazel build //:local-ai --config=ci --disk_cache= --repository_cache= --remote_cache= --remote_upload_local_results=false --remote_download_outputs=minimal --remote_accept_cached=false --verbose_failures"
         bazel build //:local-ai \
+          --config=ci \
           --disk_cache= \
           --repository_cache= \
           --remote_cache= \
