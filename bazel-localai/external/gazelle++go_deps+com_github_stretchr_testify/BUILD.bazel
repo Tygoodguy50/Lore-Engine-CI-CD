@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "testify",
+    srcs = ["doc.go"],
+    importpath = "github.com/stretchr/testify",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//assert",
+        "//http",
+        "//mock",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":testify",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "testify_test",
+    srcs = ["package_test.go"],
+    embed = [":testify"],
+    deps = ["//assert"],
+)
