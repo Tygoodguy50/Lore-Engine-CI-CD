@@ -1,7 +1,44 @@
-# Bazel build artifacts
-bazel-bin/
-bazel-out/
-bazel-testlogs/
-# Exclude the workspace directory but allow bazel-localai source files
-!bazel-localai/.bazelrc
-!bazel-localai/.github/
+# Go build artifacts
+local-ai
+local-ai.exe
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test coverage
+coverage.out
+coverage.html
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+.env.local
+.env.staging
+.env.production
+
+# Dependencies
+vendor/
+
+# Temporary files
+tmp/
+temp/
