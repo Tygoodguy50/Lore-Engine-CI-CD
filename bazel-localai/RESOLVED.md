@@ -88,3 +88,41 @@ bazel build //cmd/local-ai:local-ai
 ```
 
 The **persistent `github.com/pkg/errors` issue** that was haunting your Bazel + Bzlmod migration has been **completely resolved**! 🎯✨
+
+## 🚀 Launch System Created
+
+### Production-Ready Scripts
+- **`launch.sh`** - Bash script for Linux/macOS/WSL
+- **`launch.ps1`** - PowerShell script for Windows
+- **`launch.bat`** - Quick Windows launcher
+
+### Features
+- ✅ **Auto-loads Phi-2 model** (configurable)
+- ✅ **Sets CGO_ENABLED=0** and optimal environment
+- ✅ **Debug logging** and artifact injection support
+- ✅ **Health checks** and monitoring
+- ✅ **Configuration management** (YAML-based)
+- ✅ **Cross-platform support** (Windows/Linux/macOS)
+
+### Quick Start
+```powershell
+# Windows
+.\launch.bat
+
+# Or with options
+.\launch.ps1 -Debug -InjectArtifacts
+```
+
+```bash
+# Linux/macOS/WSL
+./launch.sh --debug --inject-artifacts
+```
+
+### Default Configuration
+- **Server**: `http://localhost:8080`
+- **Models**: Auto-configured Phi-2 + Code-Llama
+- **Logging**: Debug mode enabled
+- **CORS**: Enabled for development
+- **Threads**: 8 (configurable)
+
+See **`LAUNCH_README.md`** for complete documentation!

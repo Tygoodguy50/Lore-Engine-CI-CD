@@ -1,0 +1,17 @@
+name: phi-2
+backend: llama
+parameters:
+  model: phi-2
+  context_size: 2048
+  threads: 4
+  f16: true
+  
+# Model-specific settings
+template:
+  chat: |
+    ### Instruction:
+    {{.Input}}
+    
+    ### Response:
+  completion: |
+    {{.Input}}
