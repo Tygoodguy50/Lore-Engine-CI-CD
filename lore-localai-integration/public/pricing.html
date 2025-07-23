@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔮 Lore Engine - Pricing & Plans</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin-bottom: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .header h1 {
+            font-size: 3.5rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+        
+        .header p {
+            font-size: 1.3rem;
+            color: #ccc;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .pricing-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .pricing-card.popular {
+            border: 2px solid #4ecdc4;
+            box-shadow: 0 0 30px rgba(78, 205, 196, 0.3);
+        }
+        
+        .popular-badge {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .tier-name {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #4ecdc4;
+        }
+        
+        .tier-description {
+            color: #ccc;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+        
+        .price {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin-bottom: 5px;
+        }
+        
+        .price-period {
+            color: #888;
+            font-size: 1rem;
+            margin-bottom: 30px;
+        }
+        
+        .features {
+            list-style: none;
+            margin-bottom: 40px;
+        }
+        
+        .features li {
+            padding: 10px 0;
+            position: relative;
+            padding-left: 30px;
+            color: #ddd;
+        }
+        
+        .features li::before {
+            content: '✨';
+            position: absolute;
+            left: 0;
+            top: 10px;
+        }
+        
+        .cta-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .cta-button:hover {
+            background: linear-gradient(45deg, #764ba2, #667eea);
+            transform: translateY(-2px);
+        }
+        
+        .cta-button.popular {
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+        }
+        
+        .cta-button.popular:hover {
+            background: linear-gradient(45deg, #f5576c, #f093fb);
+        }
+        
+        .cta-button.enterprise {
+            background: linear-gradient(45deg, #ffd89b, #19547b);
+        }
+        
+        .cta-button.enterprise:hover {
+            background: linear-gradient(45deg, #19547b, #ffd89b);
+        }
+        
+        .features-comparison {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .comparison-table th,
+        .comparison-table td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .comparison-table th {
+            background: rgba(255, 255, 255, 0.1);
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+        
+        .comparison-table td.feature-name {
+            text-align: left;
+            font-weight: bold;
+            color: #ddd;
+        }
+        
+        .checkmark {
+            color: #4ecdc4;
+            font-size: 1.2rem;
+        }
+        
+        .cross {
+            color: #ff6b6b;
+            font-size: 1.2rem;
+        }
+        
+        .faq-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .faq-item {
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 20px;
+        }
+        
+        .faq-question {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #4ecdc4;
+            margin-bottom: 10px;
+        }
+        
+        .faq-answer {
+            color: #ccc;
+            line-height: 1.6;
+        }
+        
+        .trial-banner {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin: 40px 0;
+        }
+        
+        .trial-banner h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+        
+        .trial-banner p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔮 Lore Engine Pricing</h1>
+            <p>Transform your creative projects with AI-powered lore generation, conflict detection, and multi-platform automation. Choose the plan that scales with your imagination.</p>
+        </div>
+
+        <div id="loading" class="loading">
+            <p>Loading pricing information...</p>
+        </div>
+
+        <div id="pricing-content" style="display: none;">
+            <div class="trial-banner">
+                <h3>🎯 Start Your Journey</h3>
+                <p>All plans include a <strong>14-day free trial</strong> - no credit card required!</p>
+            </div>
+
+            <div class="pricing-grid" id="pricing-grid">
+                <!-- Pricing cards will be dynamically loaded here -->
+            </div>
+
+            <div class="features-comparison">
+                <h2 style="text-align: center; color: #4ecdc4; margin-bottom: 30px;">📊 Feature Comparison</h2>
+                <div style="overflow-x: auto;">
+                    <table class="comparison-table" id="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>Observer</th>
+                                <th>Architect</th>
+                                <th>Master</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Comparison rows will be dynamically generated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="faq-section">
+                <h2 style="text-align: center; color: #4ecdc4; margin-bottom: 30px;">❓ Frequently Asked Questions</h2>
+                
+                <div class="faq-item">
+                    <div class="faq-question">What is the Lore Engine?</div>
+                    <div class="faq-answer">The Lore Engine is a comprehensive AI-powered system that processes narrative content, detects conflicts, and automatically distributes your lore across multiple platforms including Discord, TikTok, and custom webhooks.</div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">How does the free trial work?</div>
+                    <div class="faq-answer">You get 14 days of full access to any plan without providing a credit card. Simply sign up and start exploring all features immediately.</div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">Can I upgrade or downgrade my plan?</div>
+                    <div class="faq-answer">Yes! You can change your plan at any time. Upgrades take effect immediately, while downgrades take effect at your next billing cycle.</div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">What happens if I exceed my limits?</div>
+                    <div class="faq-answer">We'll notify you when approaching limits. If exceeded, you can upgrade your plan or wait until the next billing cycle for limits to reset.</div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">Is there an API available?</div>
+                    <div class="faq-answer">Yes! All plans include full API access with comprehensive documentation. Enterprise plans include custom integration support.</div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">What payment methods do you accept?</div>
+                    <div class="faq-answer">We accept all major credit cards, PayPal, and ACH transfers for Enterprise plans. All payments are processed securely through Stripe.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadPricing() {
+            try {
+                const response = await fetch('/api/pricing');
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderPricingCards(data.tiers);
+                    renderComparisonTable(data.tiers);
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('pricing-content').style.display = 'block';
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                console.error('Failed to load pricing:', error);
+                document.getElementById('loading').innerHTML = `
+                    <p style="color: #ff6b6b;">❌ Failed to load pricing information</p>
+                    <p style="color: #888;">Please try refreshing the page</p>
+                `;
+            }
+        }
+
+        function renderPricingCards(tiers) {
+            const grid = document.getElementById('pricing-grid');
+            
+            tiers.forEach(tier => {
+                const card = document.createElement('div');
+                card.className = `pricing-card ${tier.popular ? 'popular' : ''}`;
+                
+                const featuresHtml = tier.features.map(feature => `<li>${feature}</li>`).join('');
+                const ctaClass = tier.id === 'pro' ? 'popular' : (tier.id === 'enterprise' ? 'enterprise' : '');
+                
+                card.innerHTML = `
+                    ${tier.popular ? '<div class="popular-badge">Most Popular</div>' : ''}
+                    <div class="tier-name">${tier.name}</div>
+                    <div class="tier-description">${tier.description}</div>
+                    <div class="price">$${tier.price}</div>
+                    <div class="price-period">per ${tier.interval}</div>
+                    <ul class="features">${featuresHtml}</ul>
+                    <button class="cta-button ${ctaClass}" onclick="subscribe('${tier.id}')">
+                        Start Free Trial
+                    </button>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function renderComparisonTable(tiers) {
+            const table = document.getElementById('comparison-table').getElementsByTagName('tbody')[0];
+            
+            const comparisonFeatures = [
+                { name: 'Events per Month', prop: 'eventsPerMonth' },
+                { name: 'Conflict Detections', prop: 'conflictDetections' },
+                { name: 'Realtime Connections', prop: 'realtimeConnections' },
+                { name: 'API Calls per Minute', prop: 'apiCallsPerMinute' },
+                { name: 'Webhook Endpoints', prop: 'webhookEndpoints' },
+                { name: 'Dashboard Access', prop: 'dashboardAccess' },
+                { name: 'Priority Support', prop: 'prioritySupport' },
+                { name: 'Custom Integrations', prop: 'customIntegrations' }
+            ];
+            
+            comparisonFeatures.forEach(feature => {
+                const row = table.insertRow();
+                row.innerHTML = `
+                    <td class="feature-name">${feature.name}</td>
+                    ${tiers.map(tier => {
+                        const value = tier.limits[feature.prop];
+                        let displayValue;
+                        
+                        if (typeof value === 'boolean') {
+                            displayValue = value ? '<span class="checkmark">✓</span>' : '<span class="cross">✗</span>';
+                        } else if (value === -1) {
+                            displayValue = '<span class="checkmark">Unlimited</span>';
+                        } else {
+                            displayValue = value.toLocaleString();
+                        }
+                        
+                        return `<td>${displayValue}</td>`;
+                    }).join('')}
+                `;
+            });
+        }
+
+        async function subscribe(tierId) {
+            const email = prompt('Enter your email address to start your free trial:');
+            if (!email || !email.includes('@')) {
+                alert('Please enter a valid email address');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/billing/subscribe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        tier: tierId,
+                        email: email,
+                        metadata: {
+                            source: 'pricing_page',
+                            tier_selected: tierId
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Redirect to Stripe Checkout
+                    window.location.href = data.checkout_url;
+                } else {
+                    alert('Failed to create subscription: ' + (data.errors?.[0]?.msg || data.error));
+                }
+            } catch (error) {
+                alert('Failed to start subscription process: ' + error.message);
+            }
+        }
+
+        // Load pricing on page load
+        document.addEventListener('DOMContentLoaded', loadPricing);
+    </script>
+</body>
+</html>

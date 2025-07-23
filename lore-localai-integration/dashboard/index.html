@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👻 Haunted Payout Dashboard | Lore Engine Empire</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- 🕸️ Header with live status -->
+    <header class="haunted-header">
+        <div class="header-content">
+            <h1 class="title">
+                <i class="fas fa-ghost"></i>
+                Haunted Payout Dashboard
+                <span class="pulse-dot"></span>
+            </h1>
+            <div class="live-status">
+                <span id="liveIndicator" class="status-live">● LIVE</span>
+                <span id="lastUpdate">Updated: Never</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 💰 Main Dashboard Grid -->
+    <main class="dashboard-grid">
+        <!-- 🎭 Creator Performance Section -->
+        <section class="dashboard-card creator-overview">
+            <h2><i class="fas fa-users"></i> Active Creators</h2>
+            <div id="creatorCards" class="creator-grid">
+                <!-- Creator cards will be dynamically generated -->
+            </div>
+        </section>
+
+        <!-- 🧮 Viral Score Meter -->
+        <section class="dashboard-card viral-meter-section">
+            <h2><i class="fas fa-chart-line"></i> Viral Coefficient Tracker</h2>
+            <div class="viral-meter-container">
+                <canvas id="viralScoreChart" width="400" height="200"></canvas>
+                <div class="viral-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Current Coefficient</span>
+                        <span id="currentCoeff" class="stat-value">1.23</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">24h Change</span>
+                        <span id="coeffChange" class="stat-value positive">+0.15</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 💸 Payout Summary -->
+        <section class="dashboard-card payout-summary">
+            <h2><i class="fas fa-money-bill-wave"></i> Payout Status</h2>
+            <div class="payout-details">
+                <div class="current-tier">
+                    <div class="tier-badge" id="currentTier">Possessed Tier</div>
+                    <div class="tier-earnings">
+                        $<span id="weeklyEarnings">750.00</span>
+                        <small>this week</small>
+                    </div>
+                </div>
+                <div class="progress-to-next">
+                    <label>Progress to Ghost Tier</label>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 75%"></div>
+                    </div>
+                    <span class="progress-text">$250 to unlock</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 🔗 Referral Impact -->
+        <section class="dashboard-card referral-timeline">
+            <h2><i class="fas fa-share-nodes"></i> Referral Timeline</h2>
+            <canvas id="referralChart" width="400" height="200"></canvas>
+            <div class="referral-stats">
+                <div class="stat-box">
+                    <div class="stat-number" id="totalReferrals">142</div>
+                    <div class="stat-desc">Total Referrals</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="activeChains">23</div>
+                    <div class="stat-desc">Active Chains</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="referralRevenue">$1,247</div>
+                    <div class="stat-desc">Referral Revenue</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 🧬 Fragment Performance -->
+        <section class="dashboard-card fragment-performance">
+            <h2><i class="fas fa-dna"></i> Fragment Performance</h2>
+            <div class="table-container">
+                <table id="fragmentTable">
+                    <thead>
+                        <tr>
+                            <th>Fragment</th>
+                            <th>Score</th>
+                            <th>Views</th>
+                            <th>Remixes</th>
+                            <th>Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dynamically populated -->
+                    </tbody>
+                </table>
+            </div>
+            <button class="remix-trigger-btn" onclick="triggerMassRemix()">
+                <i class="fas fa-magic"></i> Trigger Mass Remix
+            </button>
+        </section>
+
+        <!-- 📊 Revenue History -->
+        <section class="dashboard-card revenue-history">
+            <h2><i class="fas fa-chart-area"></i> Weekly Revenue History</h2>
+            <canvas id="revenueChart" width="400" height="200"></canvas>
+            <div class="revenue-breakdown">
+                <div class="breakdown-item">
+                    <span class="source-dot subscriptions"></span>
+                    Subscriptions: $<span id="subRevenue">2,340</span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="source-dot templates"></span>
+                    Templates: $<span id="templateRevenue">890</span>
+                </div>
+                <div class="breakdown-item">
+                    <span class="source-dot referrals"></span>
+                    Referrals: $<span id="refRevenue">1,247</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 🏆 Rising Ghosts -->
+        <section class="dashboard-card rising-ghosts">
+            <h2><i class="fas fa-trophy"></i> Rising Ghosts</h2>
+            <div id="risingCreatorsList" class="rising-list">
+                <!-- Dynamically populated with trending creators -->
+            </div>
+        </section>
+    </main>
+
+    <!-- 🎮 Floating Action Buttons -->
+    <div class="floating-actions">
+        <button class="fab refresh-btn" onclick="forceRefreshData()" title="Force Refresh">
+            <i class="fas fa-sync-alt"></i>
+        </button>
+        <button class="fab export-btn" onclick="exportRevenueData()" title="Export Data">
+            <i class="fas fa-download"></i>
+        </button>
+        <button class="fab settings-btn" onclick="toggleSettings()" title="Settings">
+            <i class="fas fa-cog"></i>
+        </button>
+    </div>
+
+    <!-- 🚨 Notification Toast -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="components/creatorCard.js"></script>
+    <script src="components/payoutSummary.js"></script>
+    <script src="components/viralScoreMeter.js"></script>
+    <script src="components/referralTimeline.js"></script>
+    <script src="api/getCreators.js"></script>
+    <script src="api/getRevenue.js"></script>
+    <script src="api/getViralScore.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

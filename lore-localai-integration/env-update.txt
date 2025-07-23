@@ -1,0 +1,9 @@
+# Add these lines to your .env file after deployment:
+BUSINESS_WEBSITE=https://haunted.phantomgear.it.com
+BUSINESS_EMAIL=support@phantomgear.it.com
+BUSINESS_NAME=PhantomGear Technologies
+BUSINESS_DOMAIN=phantomgear.it.com
+
+# SSL/HTTPS Settings
+ENABLE_HTTPS=true
+SECURE_HEADERS=true

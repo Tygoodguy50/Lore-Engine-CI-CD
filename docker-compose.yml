@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  lore-engine:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+      - ./public:/app/public
+    # Add other service-specific config as needed
+
+  # Example: Add other services (e.g., dashboard, api-gateway) here
+  # dashboard:
+  #   build: ./dashboard
+  #   env_file:
+  #     - .env
+  #   ports:
+  #     - "3001:3001"
+  #   depends_on:
+  #     - lore-engine

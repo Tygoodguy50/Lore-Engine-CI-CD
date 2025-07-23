@@ -1,0 +1,37 @@
+# Production Dockerfile for Real-time WebSocket Service
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apk add --no-cache curl
+
+# Copy package files
+COPY package*.json ./
+
+# Install production dependencies
+RUN npm ci --only=production
+
+# Copy application code
+COPY realtime-standalone.js ./
+COPY .env ./
+
+# Create logs directory
+RUN mkdir -p logs
+
+# Set non-root user for security
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nodejs -u 1001
+RUN chown -R nodejs:nodejs /app
+USER nodejs
+
+# Expose port
+EXPOSE 8082
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8082/api/health || exit 1
+
+# Start the application
+CMD ["node", "realtime-standalone.js"]

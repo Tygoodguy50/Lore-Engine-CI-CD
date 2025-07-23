@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔮 Welcome to Lore Engine!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .success-container {
+            max-width: 600px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+        
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .success-container h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+        
+        .success-container p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: #ccc;
+        }
+        
+        .next-steps {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            text-align: left;
+        }
+        
+        .next-steps h3 {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+        }
+        
+        .next-steps ol {
+            color: #ddd;
+            line-height: 1.8;
+            padding-left: 20px;
+        }
+        
+        .credentials {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        
+        .credential-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+        
+        .copy-btn {
+            background: rgba(78, 205, 196, 0.2);
+            border: 1px solid #4ecdc4;
+            color: #4ecdc4;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
+        .copy-btn:hover {
+            background: rgba(78, 205, 196, 0.3);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #764ba2, #667eea);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .loading {
+            display: none;
+            color: #ffa726;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-icon">🎉</div>
+        <h1>Welcome to Lore Engine!</h1>
+        <p>Your subscription has been activated successfully. You now have access to the most powerful lore conflict detection system in the digital realm.</p>
+        
+        <div id="loading" class="loading">
+            <p>🔄 Setting up your account...</p>
+        </div>
+        
+        <div id="success-content">
+            <div class="credentials">
+                <h3 style="color: #4ecdc4; margin-bottom: 15px;">🔑 Your API Credentials</h3>
+                <div class="credential-item">
+                    <div>
+                        <strong>API Key:</strong><br>
+                        <span id="api-key">lore_sk_1234567890abcdef</span>
+                    </div>
+                    <button class="copy-btn" onclick="copyToClipboard('api-key')">Copy</button>
+                </div>
+                <div class="credential-item">
+                    <div>
+                        <strong>Customer ID:</strong><br>
+                        <span id="customer-id">cust_ABC123XYZ</span>
+                    </div>
+                    <button class="copy-btn" onclick="copyToClipboard('customer-id')">Copy</button>
+                </div>
+            </div>
+            
+            <div class="next-steps">
+                <h3>🚀 Next Steps</h3>
+                <ol>
+                    <li><strong>Save your API key</strong> - You'll need it to access the Lore Engine API</li>
+                    <li><strong>Explore the dashboard</strong> - Monitor your usage and test API endpoints</li>
+                    <li><strong>Read the documentation</strong> - Learn how to integrate with your applications</li>
+                    <li><strong>Start creating</strong> - Begin detecting conflicts and evolving your lore!</li>
+                </ol>
+            </div>
+            
+            <div class="action-buttons">
+                <a href="/dashboard.html" class="btn btn-primary">📊 Go to Dashboard</a>
+                <a href="/docs" class="btn btn-secondary">📚 View Documentation</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = 'rgba(78, 205, 196, 0.4)';
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = 'rgba(78, 205, 196, 0.2)';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        // Simulate account setup process
+        function simulateSetup() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sessionId = urlParams.get('session_id');
+            
+            if (sessionId) {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('success-content').style.display = 'none';
+                
+                // Simulate API call to complete setup
+                setTimeout(() => {
+                    // Generate realistic-looking credentials
+                    const apiKey = 'lore_sk_' + Math.random().toString(36).substr(2, 16);
+                    const customerId = 'cust_' + Math.random().toString(36).substr(2, 9).toUpperCase();
+                    
+                    document.getElementById('api-key').textContent = apiKey;
+                    document.getElementById('customer-id').textContent = customerId;
+                    
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('success-content').style.display = 'block';
+                }, 2000);
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', simulateSetup);
+
+        // Add some visual flair
+        function createFloatingElements() {
+            const container = document.querySelector('.success-container');
+            const symbols = ['🔮', '✨', '⭐', '💫', '🌟'];
+            
+            setInterval(() => {
+                if (Math.random() > 0.7) {
+                    const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+                    const element = document.createElement('div');
+                    element.textContent = symbol;
+                    element.style.position = 'fixed';
+                    element.style.fontSize = '2rem';
+                    element.style.opacity = '0.7';
+                    element.style.pointerEvents = 'none';
+                    element.style.zIndex = '-1';
+                    element.style.left = Math.random() * window.innerWidth + 'px';
+                    element.style.top = window.innerHeight + 'px';
+                    element.style.animation = 'float-up 4s linear forwards';
+                    
+                    document.body.appendChild(element);
+                    
+                    setTimeout(() => {
+                        element.remove();
+                    }, 4000);
+                }
+            }, 3000);
+        }
+
+        // Add floating animation CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float-up {
+                to {
+                    transform: translateY(-${window.innerHeight + 100}px) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Start floating elements after a delay
+        setTimeout(createFloatingElements, 3000);
+    </script>
+</body>
+</html>

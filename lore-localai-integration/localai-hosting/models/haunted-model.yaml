@@ -1,0 +1,114 @@
+name: haunted-model
+backend: llama-cpp
+context_size: 4096
+f16: true
+threads: 4
+temperature: 0.7
+top_k: 40
+top_p: 0.95
+seed: -1
+mirostat: 0
+mirostat_eta: 0.1
+mirostat_tau: 5.0
+max_tokens: 2048
+stopwords:
+  - "Human:"
+  - "Assistant:"
+  - "<|endoftext|>"
+  - "<|end|>"
+
+# Model file path (relative to models directory)
+model: haunted-model.gguf
+
+# Chat template configuration
+template:
+  chat: |
+    {{.Input}}
+    
+    ### Response:
+    {{.Response}}
+  
+  chat_message: |
+    {{if eq .RoleName "user"}}### Human:
+    {{.Content}}
+    {{else}}### Assistant:
+    {{.Content}}
+    {{end}}
+
+# Parameters for haunted/supernatural content generation
+parameters:
+  description: "Specialized model for generating haunted and supernatural content"
+  capabilities:
+    - text-generation
+    - story-telling
+    - horror-themes
+    - supernatural-elements
+    - atmospheric-writing
+  
+  # Custom parameters for horror/supernatural content
+  horror_intensity: 0.8
+  supernatural_elements: true
+  atmospheric_focus: true
+  character_development: true
+  
+  # Content guidelines
+  content_guidelines:
+    - Focus on psychological horror over gore
+    - Emphasize atmosphere and mood
+    - Include supernatural elements naturally
+    - Maintain narrative consistency
+    - Develop compelling characters
+    
+  # Prompt templates
+  prompt_templates:
+    story_beginning: |
+      Create a haunting opening for a supernatural story. Set the scene with atmospheric details
+      and introduce elements that hint at otherworldly presence. Focus on building tension
+      through environmental descriptions and character reactions.
+    
+    character_introduction: |
+      Introduce a character who has an unusual connection to the supernatural realm.
+      Describe their background, personality, and the nature of their supernatural sensitivity.
+      Make them relatable yet mysterious.
+    
+    conflict_escalation: |
+      Escalate the supernatural conflict in the story. Introduce new paranormal elements
+      that challenge the characters and raise the stakes. Build tension while maintaining
+      logical story progression.
+    
+    atmospheric_description: |
+      Create a detailed atmospheric description of a haunted location. Include sensory details
+      that evoke unease and supernatural presence. Focus on subtle signs of paranormal activity.
+
+# Performance optimization
+optimization:
+  gpu_layers: 35
+  batch_size: 512
+  rope_freq_base: 10000
+  rope_freq_scale: 1.0
+  use_mlock: true
+  use_mmap: true
+  numa: false
+
+# Logging and monitoring
+logging:
+  level: info
+  model_load_time: true
+  inference_time: true
+  token_metrics: true
+
+# Safety and content filtering
+safety:
+  enable_content_filter: true
+  max_content_length: 8192
+  blocked_patterns:
+    - extreme_violence
+    - explicit_content
+    - harmful_instructions
+  
+  allowed_themes:
+    - supernatural
+    - horror
+    - mystery
+    - psychological_thriller
+    - gothic_fiction

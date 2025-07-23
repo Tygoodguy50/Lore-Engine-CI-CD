@@ -1,0 +1,146 @@
+name: fantasy-model
+backend: llama-cpp
+context_size: 4096
+f16: true
+threads: 4
+temperature: 0.8
+top_k: 50
+top_p: 0.9
+seed: -1
+mirostat: 0
+mirostat_eta: 0.1
+mirostat_tau: 5.0
+max_tokens: 2048
+stopwords:
+  - "Human:"
+  - "Assistant:"
+  - "<|endoftext|>"
+  - "<|end|>"
+
+# Model file path (relative to models directory)
+model: fantasy-model.gguf
+
+# Chat template configuration
+template:
+  chat: |
+    {{.Input}}
+    
+    ### Response:
+    {{.Response}}
+  
+  chat_message: |
+    {{if eq .RoleName "user"}}### Human:
+    {{.Content}}
+    {{else}}### Assistant:
+    {{.Content}}
+    {{end}}
+
+# Parameters for fantasy content generation
+parameters:
+  description: "Specialized model for generating fantasy and magical content"
+  capabilities:
+    - text-generation
+    - world-building
+    - character-creation
+    - magic-systems
+    - lore-development
+    - adventure-writing
+  
+  # Custom parameters for fantasy content
+  magic_intensity: 0.9
+  world_building_focus: true
+  character_depth: true
+  lore_consistency: true
+  
+  # Content guidelines
+  content_guidelines:
+    - Create immersive fantasy worlds
+    - Develop consistent magic systems
+    - Build compelling characters with clear motivations
+    - Maintain internal logic and consistency
+    - Include rich cultural and historical details
+    
+  # Prompt templates
+  prompt_templates:
+    world_building: |
+      Create a detailed fantasy world with unique geography, cultures, and magical systems.
+      Include information about kingdoms, races, religions, and the history that shapes
+      the current political landscape. Focus on originality and internal consistency.
+    
+    character_creation: |
+      Develop a compelling fantasy character with a clear background, motivations, and
+      unique abilities. Include their role in the world, relationships with other characters,
+      and personal conflicts that drive their story arc.
+    
+    magic_system: |
+      Design a unique magic system with clear rules, limitations, and consequences.
+      Explain how magic works in this world, who can use it, what costs are involved,
+      and how it affects society and politics.
+    
+    adventure_hook: |
+      Create an engaging adventure hook that draws characters into a larger conflict
+      or mystery. Include multiple plot threads, interesting NPCs, and opportunities
+      for character development and world exploration.
+    
+    lore_development: |
+      Develop rich lore for a fantasy setting, including myths, legends, historical events,
+      and cultural traditions. Create interconnected stories that add depth and meaning
+      to the world's current state.
+
+# Performance optimization
+optimization:
+  gpu_layers: 35
+  batch_size: 512
+  rope_freq_base: 10000
+  rope_freq_scale: 1.0
+  use_mlock: true
+  use_mmap: true
+  numa: false
+
+# Logging and monitoring
+logging:
+  level: info
+  model_load_time: true
+  inference_time: true
+  token_metrics: true
+
+# Safety and content filtering
+safety:
+  enable_content_filter: true
+  max_content_length: 8192
+  blocked_patterns:
+    - extreme_violence
+    - explicit_content
+    - harmful_instructions
+  
+  allowed_themes:
+    - fantasy
+    - magic
+    - adventure
+    - mythology
+    - world_building
+    - heroic_fantasy
+    - epic_fantasy
+    - urban_fantasy
+
+# Model-specific settings
+model_settings:
+  # Fantasy-specific parameters
+  creativity_boost: 1.2
+  world_consistency_check: true
+  character_consistency_check: true
+  
+  # Language style preferences
+  language_style:
+    - descriptive
+    - immersive
+    - poetic
+    - detailed
+  
+  # Content focus areas
+  focus_areas:
+    - world_building: 0.3
+    - character_development: 0.25
+    - plot_progression: 0.2
+    - dialogue: 0.15
+    - description: 0.1
