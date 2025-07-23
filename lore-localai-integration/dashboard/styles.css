@@ -1,0 +1,566 @@
+/* 👻 Haunted Payout Dashboard - Dark Mode with Neon Accents */
+
+:root {
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #1a1a1a;
+  --bg-card: #1e1e1e;
+  --bg-hover: #2a2a2a;
+  
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --text-muted: #888888;
+  
+  --accent-neon: #00ff41;
+  --accent-ghost: #8b5cf6;
+  --accent-danger: #ff4757;
+  --accent-warning: #ffa726;
+  --accent-success: #00ff41;
+  
+  --border-color: #333333;
+  --shadow-glow: 0 0 20px rgba(0, 255, 65, 0.3);
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.5);
+  
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Fira Code', monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* 🕸️ Header Styles */
+.haunted-header {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+  border-bottom: 2px solid var(--border-color);
+  padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-card);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  background: linear-gradient(45deg, var(--accent-neon), var(--accent-ghost));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent-neon);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+  margin-left: 0.5rem;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+.live-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.status-live {
+  color: var(--accent-success);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+#lastUpdate {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+/* 📊 Dashboard Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.dashboard-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-card);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.dashboard-card:hover {
+  border-color: var(--accent-neon);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-2px);
+}
+
+.dashboard-card h2 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-primary);
+}
+
+.dashboard-card h2 i {
+  color: var(--accent-ghost);
+}
+
+/* 🎭 Creator Cards */
+.creator-overview {
+  grid-column: span 2;
+}
+
+.creator-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.creator-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  transition: all 0.3s ease;
+}
+
+.creator-card:hover {
+  border-color: var(--accent-neon);
+  transform: scale(1.02);
+}
+
+.creator-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.creator-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, var(--accent-ghost), var(--accent-neon));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+}
+
+.creator-info h3 {
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.creator-handle {
+  color: var(--accent-neon);
+  font-size: 0.85rem;
+}
+
+.creator-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent-neon);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* 🧮 Viral Score Meter */
+.viral-meter-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.viral-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 1rem;
+}
+
+.positive {
+  color: var(--accent-success);
+}
+
+.negative {
+  color: var(--accent-danger);
+}
+
+/* 💸 Payout Summary */
+.payout-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.current-tier {
+  text-align: center;
+}
+
+.tier-badge {
+  display: inline-block;
+  background: linear-gradient(45deg, var(--accent-ghost), var(--accent-neon));
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.tier-earnings {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent-neon);
+}
+
+.tier-earnings small {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: block;
+}
+
+.progress-to-next label {
+  display: block;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.progress-bar {
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  height: 8px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, var(--accent-ghost), var(--accent-neon));
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.5s ease;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.progress-text {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* 🔗 Referral Stats */
+.referral-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 1rem;
+}
+
+.stat-box {
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-neon);
+}
+
+.stat-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+/* 🧬 Fragment Performance */
+.fragment-performance {
+  grid-column: span 2;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+#fragmentTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#fragmentTable th,
+#fragmentTable td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+#fragmentTable th {
+  background: var(--bg-secondary);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+#fragmentTable tr:hover {
+  background: var(--bg-hover);
+}
+
+.remix-trigger-btn {
+  background: linear-gradient(45deg, var(--accent-ghost), var(--accent-neon));
+  border: none;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.remix-trigger-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+
+/* 📊 Revenue Breakdown */
+.revenue-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.breakdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.source-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.source-dot.subscriptions {
+  background: var(--accent-neon);
+}
+
+.source-dot.templates {
+  background: var(--accent-ghost);
+}
+
+.source-dot.referrals {
+  background: var(--accent-warning);
+}
+
+/* 🏆 Rising Ghosts */
+.rising-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rising-creator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.rising-creator:hover {
+  background: var(--bg-hover);
+  transform: translateX(4px);
+}
+
+.rising-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rising-trend {
+  color: var(--accent-success);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* 🎮 Floating Action Buttons */
+.floating-actions {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  z-index: 100;
+}
+
+.fab {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(45deg, var(--accent-ghost), var(--accent-neon));
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  box-shadow: var(--shadow-card);
+}
+
+.fab:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-glow);
+}
+
+/* 🚨 Toast Notifications */
+.toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.toast {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  min-width: 300px;
+  animation: slideIn 0.3s ease;
+  position: relative;
+}
+
+.toast.success {
+  border-color: var(--accent-success);
+  box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+}
+
+.toast.error {
+  border-color: var(--accent-danger);
+  box-shadow: 0 0 10px rgba(255, 71, 87, 0.3);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* 📱 Responsive Design */
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+  
+  .creator-overview,
+  .fragment-performance {
+    grid-column: span 1;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .floating-actions {
+    bottom: 1rem;
+    right: 1rem;
+  }
+}
+
+/* 🌙 Dark Mode Enhancements */
+canvas {
+  background: transparent !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-ghost);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-neon);
+}

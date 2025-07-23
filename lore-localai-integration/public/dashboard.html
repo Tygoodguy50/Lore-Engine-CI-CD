@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔮 Lore Engine - Customer Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+        
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .tier-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .tier-basic { background: linear-gradient(45deg, #667eea, #764ba2); }
+        .tier-pro { background: linear-gradient(45deg, #f093fb, #f5576c); }
+        .tier-enterprise { background: linear-gradient(45deg, #ffd89b, #19547b); }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card h3 {
+            color: #4ecdc4;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+        
+        .stat-limit {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecdc4, #44a08d);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .api-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .api-key {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+            word-break: break-all;
+        }
+        
+        .copy-btn {
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-left: 10px;
+            transition: background 0.3s ease;
+        }
+        
+        .copy-btn:hover {
+            background: #45b7d1;
+        }
+        
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .action-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .action-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .action-btn:hover {
+            background: linear-gradient(45deg, #764ba2, #667eea);
+            transform: translateY(-2px);
+        }
+        
+        .action-btn.upgrade {
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+        }
+        
+        .action-btn.upgrade:hover {
+            background: linear-gradient(45deg, #f5576c, #f093fb);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2rem;
+            color: #888;
+        }
+        
+        .error {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .login-form {
+            max-width: 400px;
+            margin: 100px auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .login-input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .login-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .usage-chart {
+            margin-top: 20px;
+        }
+        
+        .chart-bar {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+        }
+        
+        .chart-label {
+            width: 120px;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+        
+        .chart-progress {
+            flex: 1;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+        
+        .chart-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecdc4, #44a08d);
+            border-radius: 10px;
+            transition: width 0.8s ease;
+        }
+        
+        .chart-value {
+            font-size: 0.9rem;
+            color: #fff;
+            font-weight: bold;
+            min-width: 60px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loginForm" class="login-form">
+        <h2 style="text-align: center; margin-bottom: 30px; color: #4ecdc4;">🔮 Lore Engine Dashboard</h2>
+        <input type="text" id="apiKeyInput" class="login-input" placeholder="Enter your API key">
+        <button class="action-btn" onclick="login()" style="width: 100%; margin-top: 20px;">Access Dashboard</button>
+        <p style="text-align: center; margin-top: 20px; color: #888; font-size: 0.9rem;">
+            Don't have an account? <a href="/api/pricing" style="color: #4ecdc4;">View Pricing</a>
+        </p>
+    </div>
+
+    <div id="dashboard" class="dashboard-container" style="display: none;">
+        <div class="header">
+            <h1>🔮 Lore Engine Dashboard</h1>
+            <div id="tierBadge" class="tier-badge"></div>
+            <p id="customerEmail" style="margin-top: 10px; color: #ccc;"></p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>📊 Events Processed</h3>
+                <div class="stat-value" id="eventsProcessed">-</div>
+                <div class="stat-limit" id="eventsLimit">-</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="eventsProgress" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>⚡ Conflicts Detected</h3>
+                <div class="stat-value" id="conflictsDetected">-</div>
+                <div class="stat-limit" id="conflictsLimit">-</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="conflictsProgress" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>🔌 API Calls</h3>
+                <div class="stat-value" id="apiCalls">-</div>
+                <div class="stat-limit" id="apiLimit">-</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="apiProgress" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>🌐 Realtime Connections</h3>
+                <div class="stat-value" id="realtimeConnections">-</div>
+                <div class="stat-limit" id="realtimeLimit">-</div>
+            </div>
+        </div>
+
+        <div class="api-section">
+            <h2 style="color: #4ecdc4; margin-bottom: 20px;">🔑 API Access</h2>
+            <p style="margin-bottom: 15px;">Use this API key to access Lore Engine services:</p>
+            <div class="api-key">
+                <span id="apiKeyDisplay">Loading...</span>
+                <button class="copy-btn" onclick="copyApiKey()">Copy</button>
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <h3 style="color: #4ecdc4; margin-bottom: 15px;">📈 Usage Analytics</h3>
+                <div class="usage-chart">
+                    <div class="chart-bar">
+                        <div class="chart-label">Events</div>
+                        <div class="chart-progress">
+                            <div class="chart-fill" id="eventsChart" style="width: 0%"></div>
+                        </div>
+                        <div class="chart-value" id="eventsPercent">0%</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="chart-label">Conflicts</div>
+                        <div class="chart-progress">
+                            <div class="chart-fill" id="conflictsChart" style="width: 0%"></div>
+                        </div>
+                        <div class="chart-value" id="conflictsPercent">0%</div>
+                    </div>
+                    <div class="chart-bar">
+                        <div class="chart-label">API Calls</div>
+                        <div class="chart-progress">
+                            <div class="chart-fill" id="apiChart" style="width: 0%"></div>
+                        </div>
+                        <div class="chart-value" id="apiPercent">0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-grid">
+            <div class="action-card">
+                <h3 style="color: #4ecdc4;">🚀 Process Events</h3>
+                <p>Send lore events to the multi-agent system for processing and routing.</p>
+                <button class="action-btn" onclick="testEventProcessing()">Test API</button>
+            </div>
+            
+            <div class="action-card">
+                <h3 style="color: #4ecdc4;">🔍 Analyze Conflicts</h3>
+                <p>Detect and resolve conflicts in your lore narratives.</p>
+                <button class="action-btn" onclick="testConflictDetection()">Test API</button>
+            </div>
+            
+            <div class="action-card">
+                <h3 style="color: #4ecdc4;">📊 View Analytics</h3>
+                <p>Access detailed analytics and performance metrics.</p>
+                <button class="action-btn" onclick="viewAnalytics()">View Stats</button>
+            </div>
+            
+            <div class="action-card">
+                <h3 style="color: #4ecdc4;">⬆️ Upgrade Plan</h3>
+                <p>Unlock more features and higher limits.</p>
+                <a href="/api/pricing" class="action-btn upgrade">Upgrade</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="loading" class="loading" style="display: none;">
+        <p>🔮 Loading your dashboard...</p>
+    </div>
+
+    <script>
+        let currentApiKey = null;
+        let currentCustomer = null;
+        let refreshInterval = null;
+
+        function login() {
+            const apiKey = document.getElementById('apiKeyInput').value.trim();
+            if (!apiKey) {
+                alert('Please enter your API key');
+                return;
+            }
+
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+
+            currentApiKey = apiKey;
+            fetchDashboardData();
+        }
+
+        async function fetchDashboardData() {
+            try {
+                // First, test the API key by making a stats request
+                const response = await fetch('/api/lore/stats', {
+                    headers: {
+                        'X-API-Key': currentApiKey
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Invalid API key or subscription expired');
+                }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentCustomer = data.stats.customer;
+                    updateDashboard(data.stats);
+                    
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('dashboard').style.display = 'block';
+                    
+                    // Start periodic refresh
+                    refreshInterval = setInterval(fetchDashboardData, 30000);
+                } else {
+                    throw new Error(data.error || 'Failed to load dashboard');
+                }
+            } catch (error) {
+                console.error('Dashboard error:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('loginForm').style.display = 'block';
+                
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                errorDiv.innerHTML = `❌ ${error.message}`;
+                document.getElementById('loginForm').appendChild(errorDiv);
+                
+                setTimeout(() => errorDiv.remove(), 5000);
+            }
+        }
+
+        function updateDashboard(stats) {
+            // Update header
+            const tierBadge = document.getElementById('tierBadge');
+            tierBadge.textContent = stats.customer.tier.toUpperCase();
+            tierBadge.className = `tier-badge tier-${stats.customer.tier}`;
+            
+            document.getElementById('customerEmail').textContent = currentCustomer.id;
+            document.getElementById('apiKeyDisplay').textContent = currentApiKey;
+
+            // Update usage stats
+            const usage = stats.usage;
+            const limits = stats.limits;
+
+            // Events
+            document.getElementById('eventsProcessed').textContent = usage.eventsProcessed || 0;
+            const eventsLimit = limits.eventsPerMonth === -1 ? 'Unlimited' : limits.eventsPerMonth;
+            document.getElementById('eventsLimit').textContent = `Limit: ${eventsLimit}`;
+            
+            if (limits.eventsPerMonth !== -1) {
+                const eventsPercent = Math.min((usage.eventsProcessed / limits.eventsPerMonth) * 100, 100);
+                document.getElementById('eventsProgress').style.width = eventsPercent + '%';
+                document.getElementById('eventsChart').style.width = eventsPercent + '%';
+                document.getElementById('eventsPercent').textContent = Math.round(eventsPercent) + '%';
+            } else {
+                document.getElementById('eventsProgress').style.width = '100%';
+                document.getElementById('eventsChart').style.width = '25%';
+                document.getElementById('eventsPercent').textContent = '∞';
+            }
+
+            // Conflicts
+            document.getElementById('conflictsDetected').textContent = usage.conflictsDetected || 0;
+            const conflictsLimit = limits.conflictDetections === -1 ? 'Unlimited' : limits.conflictDetections;
+            document.getElementById('conflictsLimit').textContent = `Limit: ${conflictsLimit}`;
+            
+            if (limits.conflictDetections !== -1) {
+                const conflictsPercent = Math.min((usage.conflictsDetected / limits.conflictDetections) * 100, 100);
+                document.getElementById('conflictsProgress').style.width = conflictsPercent + '%';
+                document.getElementById('conflictsChart').style.width = conflictsPercent + '%';
+                document.getElementById('conflictsPercent').textContent = Math.round(conflictsPercent) + '%';
+            } else {
+                document.getElementById('conflictsProgress').style.width = '100%';
+                document.getElementById('conflictsChart').style.width = '30%';
+                document.getElementById('conflictsPercent').textContent = '∞';
+            }
+
+            // API Calls
+            document.getElementById('apiCalls').textContent = usage.apiCalls || 0;
+            document.getElementById('apiLimit').textContent = `${limits.apiCallsPerMinute}/min`;
+            
+            const apiPercent = Math.min((usage.apiCalls / 1000) * 100, 100); // Assume 1000 calls for demo
+            document.getElementById('apiProgress').style.width = apiPercent + '%';
+            document.getElementById('apiChart').style.width = apiPercent + '%';
+            document.getElementById('apiPercent').textContent = Math.round(apiPercent) + '%';
+
+            // Realtime
+            document.getElementById('realtimeConnections').textContent = '0'; // Current connections
+            document.getElementById('realtimeLimit').textContent = `Max: ${limits.realtimeConnections}`;
+        }
+
+        function copyApiKey() {
+            navigator.clipboard.writeText(currentApiKey).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = '#44a08d';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#4ecdc4';
+                }, 2000);
+            });
+        }
+
+        async function testEventProcessing() {
+            try {
+                const response = await fetch('/api/lore/events/process', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': currentApiKey
+                    },
+                    body: JSON.stringify({
+                        type: 'lore_response',
+                        content: 'Testing the Lore Engine API from the dashboard...',
+                        user_id: currentCustomer.id,
+                        channel_id: 'dashboard_test',
+                        lore_level: 5,
+                        priority: 6,
+                        tags: ['test', 'dashboard', 'api'],
+                        metadata: {
+                            source: 'dashboard_test',
+                            timestamp: new Date().toISOString()
+                        }
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ Event processed successfully!\n\nEvent ID: ' + result.event_id + '\nDispatched to: ' + result.dispatched_to.join(', '));
+                    fetchDashboardData(); // Refresh stats
+                } else {
+                    alert('❌ Event processing failed: ' + result.error);
+                }
+            } catch (error) {
+                alert('❌ API call failed: ' + error.message);
+            }
+        }
+
+        async function testConflictDetection() {
+            try {
+                const response = await fetch('/api/lore/conflicts/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': currentApiKey
+                    },
+                    body: JSON.stringify({
+                        content: 'The ancient artifact was both destroyed and preserved in the same timeline.',
+                        user_id: currentCustomer.id,
+                        context: 'timeline_consistency_check',
+                        tags: ['timeline', 'artifact', 'paradox']
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    const status = result.conflict_detected ? '⚠️ Conflict Detected' : '✅ No Conflicts';
+                    const confidence = Math.round(result.confidence * 100);
+                    alert(`${status}\n\nConfidence: ${confidence}%\nAnalysis: ${result.analysis || 'No additional analysis'}`);
+                    fetchDashboardData(); // Refresh stats
+                } else {
+                    alert('❌ Conflict analysis failed: ' + result.error);
+                }
+            } catch (error) {
+                alert('❌ API call failed: ' + error.message);
+            }
+        }
+
+        function viewAnalytics() {
+            window.open('/api/lore/stats', '_blank');
+        }
+
+        // Auto-login if API key is in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const apiKeyFromUrl = urlParams.get('api_key');
+        if (apiKeyFromUrl) {
+            document.getElementById('apiKeyInput').value = apiKeyFromUrl;
+            login();
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+    </script>
+</body>
+</html>

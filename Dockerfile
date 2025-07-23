@@ -12,6 +12,8 @@ WORKDIR /app
 
 # Copy existing binary and essential files
 COPY local-ai.exe /app/local-ai
+# Ensure .env is available for all services
+COPY .env .env
 
 # Set permissions
 RUN chmod +x /app/local-ai && \

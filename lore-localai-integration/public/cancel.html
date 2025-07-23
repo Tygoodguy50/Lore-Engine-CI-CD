@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔮 Subscription Cancelled</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .cancel-container {
+            max-width: 600px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+        
+        .cancel-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.7;
+        }
+        
+        .cancel-container h1 {
+            font-size: 2.5rem;
+            color: #ffa726;
+            margin-bottom: 20px;
+        }
+        
+        .cancel-container p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: #ccc;
+        }
+        
+        .feedback-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            text-align: left;
+        }
+        
+        .feedback-section h3 {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .feedback-options {
+            display: grid;
+            gap: 10px;
+        }
+        
+        .feedback-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .feedback-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .feedback-option input[type="checkbox"] {
+            accent-color: #4ecdc4;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #764ba2, #667eea);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .special-offer {
+            background: linear-gradient(45deg, rgba(255, 107, 107, 0.2), rgba(78, 205, 196, 0.2));
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+        
+        .special-offer h3 {
+            color: #ff6b6b;
+            margin-bottom: 15px;
+        }
+        
+        .special-offer p {
+            margin-bottom: 20px;
+        }
+        
+        .offer-btn {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .offer-btn:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="cancel-container">
+        <div class="cancel-icon">😔</div>
+        <h1>Subscription Cancelled</h1>
+        <p>We're sorry to see you go! Your subscription has been cancelled, but you'll continue to have access to your current plan until the end of your billing period.</p>
+        
+        <div class="special-offer">
+            <h3>🎁 Wait! We have a special offer for you</h3>
+            <p>Before you go, how about <strong>50% off your next month</strong>? We'd love to keep you in the Lore Engine community!</p>
+            <button class="offer-btn" onclick="acceptOffer()">🔥 Accept 50% Off Deal</button>
+        </div>
+        
+        <div class="feedback-section">
+            <h3>💭 Help us improve</h3>
+            <p style="text-align: center; margin-bottom: 20px; color: #ccc;">What could we have done better? (Optional)</p>
+            <div class="feedback-options">
+                <label class="feedback-option">
+                    <input type="checkbox" value="too_expensive">
+                    <span>💰 Too expensive</span>
+                </label>
+                <label class="feedback-option">
+                    <input type="checkbox" value="missing_features">
+                    <span>🛠️ Missing features I needed</span>
+                </label>
+                <label class="feedback-option">
+                    <input type="checkbox" value="too_complex">
+                    <span>🤯 Too complex to use</span>
+                </label>
+                <label class="feedback-option">
+                    <input type="checkbox" value="poor_support">
+                    <span>📞 Poor customer support</span>
+                </label>
+                <label class="feedback-option">
+                    <input type="checkbox" value="found_alternative">
+                    <span>🔄 Found a better alternative</span>
+                </label>
+                <label class="feedback-option">
+                    <input type="checkbox" value="no_longer_needed">
+                    <span>🚫 No longer needed</span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <a href="/pricing.html" class="btn btn-primary">🔄 Change Plans</a>
+            <button class="btn btn-secondary" onclick="submitFeedback()">📤 Submit Feedback</button>
+            <a href="/" class="btn btn-secondary">🏠 Go Home</a>
+        </div>
+        
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+            <p style="font-size: 0.9rem; color: #888;">
+                Your account will remain active until <strong id="end-date">December 31, 2024</strong>.<br>
+                You can reactivate your subscription at any time from your dashboard.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function acceptOffer() {
+            if (confirm('🎉 Great choice! You\'ll be redirected to reactivate your subscription with 50% off the first month.')) {
+                // In a real implementation, this would redirect to Stripe with a discount code
+                window.location.href = '/pricing.html?discount=50OFF';
+            }
+        }
+        
+        function submitFeedback() {
+            const selectedFeedback = [];
+            const checkboxes = document.querySelectorAll('.feedback-option input[type="checkbox"]:checked');
+            checkboxes.forEach(checkbox => {
+                selectedFeedback.push(checkbox.value);
+            });
+            
+            if (selectedFeedback.length === 0) {
+                alert('Please select at least one feedback option, or click "Go Home" to skip.');
+                return;
+            }
+            
+            // In a real implementation, this would send feedback to the server
+            console.log('Feedback submitted:', selectedFeedback);
+            
+            // Show thank you message
+            const container = document.querySelector('.cancel-container');
+            container.innerHTML = `
+                <div class="cancel-icon">🙏</div>
+                <h1>Thank You!</h1>
+                <p>Your feedback has been received and will help us improve Lore Engine for future users.</p>
+                <p style="margin-top: 30px;">We hope you'll consider giving us another chance in the future!</p>
+                <div class="action-buttons" style="margin-top: 30px;">
+                    <a href="/" class="btn btn-primary">🏠 Go Home</a>
+                    <a href="/pricing.html" class="btn btn-secondary">👀 Browse Plans</a>
+                </div>
+            `;
+        }
+        
+        // Set the end date to end of current billing period (mock)
+        function setEndDate() {
+            const today = new Date();
+            const endDate = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('end-date').textContent = endDate.toLocaleDateString('en-US', options);
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', setEndDate);
+        
+        // Add some subtle animation
+        function addFloatingSymbols() {
+            const symbols = ['💔', '😢', '👋', '💸'];
+            const container = document.body;
+            
+            setInterval(() => {
+                if (Math.random() > 0.8) {
+                    const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+                    const element = document.createElement('div');
+                    element.textContent = symbol;
+                    element.style.position = 'fixed';
+                    element.style.fontSize = '1.5rem';
+                    element.style.opacity = '0.3';
+                    element.style.pointerEvents = 'none';
+                    element.style.zIndex = '-1';
+                    element.style.left = Math.random() * window.innerWidth + 'px';
+                    element.style.top = window.innerHeight + 'px';
+                    element.style.animation = 'float-up 6s linear forwards';
+                    
+                    container.appendChild(element);
+                    
+                    setTimeout(() => {
+                        element.remove();
+                    }, 6000);
+                }
+            }, 4000);
+        }
+        
+        // Add CSS for floating animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float-up {
+                to {
+                    transform: translateY(-${window.innerHeight + 100}px) rotate(180deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Start floating symbols after delay
+        setTimeout(addFloatingSymbols, 2000);
+    </script>
+</body>
+</html>

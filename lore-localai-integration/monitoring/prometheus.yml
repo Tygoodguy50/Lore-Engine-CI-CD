@@ -1,0 +1,40 @@
+﻿# Prometheus configuration for Lore LocalAI Integration
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  # The job name is added as a label job=<job_name> to any timeseries scraped from this config.
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Scrape metrics from the main application
+  - job_name: "lore-app"
+    static_configs:
+      - targets: ["lore-app:3000"]
+    metrics_path: "/metrics"
+    scrape_interval: 30s
+
+  # Scrape metrics from LocalAI if available
+  - job_name: "localai"
+    static_configs:
+      - targets: ["localai:8080"]
+    metrics_path: "/metrics"
+    scrape_interval: 30s
+
+  # Scrape metrics from Redis if available
+  - job_name: "redis"
+    static_configs:
+      - targets: ["redis:6379"]
+    scrape_interval: 30s
+
+  # Scrape metrics from PostgreSQL if available
+  - job_name: "postgres"
+    static_configs:
+      - targets: ["postgres:5432"]
+    scrape_interval: 30s
