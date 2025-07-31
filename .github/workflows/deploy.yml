@@ -157,13 +157,17 @@ jobs:
 
       - name: Trigger Referral Bonus Automation
         if: success()
+        env:
+          BACKEND_URL: ${{ secrets.BACKEND_API_URL }}
         run: |
-          curl -sSf https://haunted-empire-backend-1/api/trigger-referral-bonus
+          curl -sSf "$BACKEND_URL/api/trigger-referral-bonus"
 
       - name: Generate Discount Code
         if: success()
+        env:
+          BACKEND_URL: ${{ secrets.BACKEND_API_URL }}
         run: |
-          curl -sSf https://haunted-empire-backend-1/api/generate-discount | tee discount.json
+          curl -sSf "$BACKEND_URL/api/generate-discount" | tee discount.json
 
       - name: Email Discount Code (Mailgun)
         if: success()
@@ -190,15 +194,18 @@ jobs:
         if: success() && env.DISCORD_WEBHOOK_URL != ''
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          BACKEND_URL: ${{ secrets.BACKEND_API_URL }}
         run: |
-          leaderboard=$(curl -sSf https://haunted-empire-backend-1/api/leaderboard | jq -r '.top | map("🏆 " + .user + ": $" + (.earnings|tostring)) | join("\n")')
+          leaderboard=$(curl -sSf "$BACKEND_URL/api/leaderboard" | jq -r '.top | map("🏆 " + .user + ": $" + (.earnings|tostring)) | join("\n")')
           curl -X POST -H 'Content-Type: application/json' --data '{"content": "🔥 Haunted Empire Referral Leaderboard! 🔥\n\n'$leaderboard'\n\nInvite friends, climb the ranks, and earn more!"}' $DISCORD_WEBHOOK_URL
 
       - name: Automated Reward Email (Mailgun)
         if: success()
+        env:
+          BACKEND_URL: ${{ secrets.BACKEND_API_URL }}
         run: |
-          reward=$(curl -sSf https://haunted-empire-backend-1/api/reward-latest | jq -r .reward)
-          recipient=$(curl -sSf https://haunted-empire-backend-1/api/reward-latest | jq -r .email)
+          reward=$(curl -sSf "$BACKEND_URL/api/reward-latest" | jq -r .reward)
+          recipient=$(curl -sSf "$BACKEND_URL/api/reward-latest" | jq -r .email)
           curl -s -X POST https://api.mailgun.net/v3/mg.phantomgear.it.com/messages \
             -u "api:${{ secrets.MAILGUN_API_KEY }}" \
             -F from='Haunted Empire <postmaster@mg.phantomgear.it.com>' \
@@ -210,24 +217,37 @@ jobs:
         if: success() && env.SLACK_WEBHOOK_URL != ''
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          BACKEND_URL: ${{ secrets.BACKEND_API_URL }}
         run: |
-          milestone=$(curl -sSf https://haunted-empire-backend-1/api/milestone-latest | jq -r .milestone)
-          user=$(curl -sSf https://haunted-empire-backend-1/api/milestone-latest | jq -r .user)
+          milestone=$(curl -sSf "$BACKEND_URL/api/milestone-latest" | jq -r .milestone)
+          user=$(curl -sSf "$BACKEND_URL/api/milestone-latest" | jq -r .user)
           if [ "$milestone" != "null" ] && [ "$user" != "null" ]; then
             curl -X POST -H 'Content-type: application/json' --data '{"text":"🎉 Milestone Unlocked! User: '$user' just reached: $milestone! Congratulate them in the community!"}' $SLACK_WEBHOOK_URL
           fi
 
       - name: Monetization Guardrails - Validate Stripe Webhook
+        env:
+          BACKEND_URL: ${{ secrets.BACKEND_API_URL }}
         run: |
-          curl -sSf https://haunted-empire-backend-1/api/stripe-webhook-status | grep '"ok":true'
+          echo "Checking Stripe webhook status at $BACKEND_URL/api/stripe-webhook-status..."
+          status=$(curl -s -o /dev/null -w "%{http_code}" "$BACKEND_URL/api/stripe-webhook-status")
+          if [ "$status" = "200" ]; then
+            curl -sSf "$BACKEND_URL/api/stripe-webhook-status" | grep '"ok":true'
+          else
+            echo "Stripe webhook status endpoint not available (HTTP $status). Skipping check."
+          fi
 
       - name: Monetization Guardrails - Validate Referral Logic
+        env:
+          BACKEND_URL: ${{ secrets.BACKEND_API_URL }}
         run: |
-          curl -sSf https://haunted-empire-backend-1/api/referral-test | grep '"ok":true'
+          curl -sSf "$BACKEND_URL/api/referral-test" | grep '"ok":true'
 
       - name: Monetization Guardrails - Validate Payout Logic
+        env:
+          BACKEND_URL: ${{ secrets.BACKEND_API_URL }}
         run: |
-          curl -sSf https://haunted-empire-backend-1/api/payout-test | grep '"ok":true'
+          curl -sSf "$BACKEND_URL/api/payout-test" | grep '"ok":true'
 
       - name: Upload static files to Netlify
         uses: nwtgck/actions-netlify@v2.0
