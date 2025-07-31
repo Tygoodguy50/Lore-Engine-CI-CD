@@ -125,6 +125,21 @@ jobs:
         # - NETLIFY_SITE_ID: Netlify site ID
         # - GITHUB_TOKEN: GitHub Actions token
 
+      - name: Wait for Netlify site to be live (Health Check)
+        run: |
+          echo "Waiting for Netlify site to be live..."
+          for i in {1..15}; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" https://${{ secrets.NETLIFY_SITE_ID }}.netlify.app)
+            if [ "$status" = "200" ]; then
+              echo "Site is live!"
+              exit 0
+            fi
+            echo "Attempt $i: Site not live yet (HTTP $status). Waiting 10s..."
+            sleep 10
+          done
+          echo "Netlify site did not become live in time. Exiting."
+          exit 1
+
       - name: Lighthouse CI Audit
         run: |
           npm install -g @lhci/cli
