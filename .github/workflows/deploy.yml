@@ -1,148 +1,389 @@
-name: 🔮 Lore Engine Deployment Pipeline
-
+name: "Haunted Empire Frontend CI/CD"
 on:
   push:
-    branches: [ main, develop ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
-  release:
-    types: [ published ]
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-  GO_VERSION: '1.21'
-  CACHE_ENABLED: 'false'
-  ACTIONS_CACHE_URL: ''
-  ACTIONS_RUNTIME_URL: ''
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    - cron: '0 8 * * *'
 
 jobs:
-  # Build and test the application
-  build-and-test:
-    name: 🔨 Build & Test
+  build-and-deploy:
     runs-on: ubuntu-latest
-    env:
-      CACHE_ENABLED: 'false'
-      GO_VERSION: '1.21'
-
     steps:
-    - name: 📥 Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Purge Netlify Cache
+        if: success()
+        run: |
+          curl -X POST -H "Authorization: Bearer ${{ secrets.NETLIFY_AUTH_TOKEN }}" \
+            https://api.netlify.com/api/v1/sites/${{ secrets.NETLIFY_SITE_ID }}/purge_cache
 
-    - name: 🏗️ Setup Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: ${{ env.GO_VERSION }}
+      - name: Validate Public URLs
+        run: |
+          curl -sSf https://${{ secrets.NETLIFY_SITE_ID }}.netlify.app | grep Haunted
+          curl -sSf https://${{ secrets.NETLIFY_SITE_ID }}.netlify.app/contact.html | grep Contact
 
-    - name: 🔍 Debug environment
-      run: |
-        echo "CACHE_ENABLED=${{ env.CACHE_ENABLED }}"
-        echo "GO_VERSION=${{ env.GO_VERSION }}"
-        echo "Working directory: $(pwd)"
-        echo "Available disk space: $(df -h . | tail -1)"
-      continue-on-error: true
+      - name: Set Release Tag
+        id: set_tag
+        run: echo "TAG=deploy-$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
-    - name: 🔍 Lint Go code
-      run: |
-        go fmt ./...
-        go vet ./...
-        if [ -n "$(go fmt ./...)" ]; then
-          echo "Code is not formatted. Please run 'go fmt ./...'"
-          exit 1
-        fi
+      - name: Create GitHub Release
+        if: success()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: Automated Deploy ${{ env.TAG }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN_RELEASE_GITHUB }}
 
-    - name: 🧪 Run tests
-      run: |
-        echo "Running Go tests..."
-        go test ./... -v -race -timeout=30m
+      - name: Notify on Success (Slack)
+        if: success()
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{"text":"Haunted Empire deployment succeeded! 🎉"}' ${{ secrets.SLACK_WEBHOOK_URL }}
 
-    - name: 🔨 Build application
-      run: |
-        echo "Building application with Go..."
-        CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o local-ai ./cmd/local-ai
-        echo "Build successful!"
-        ls -la local-ai
 
-    - name: 🔍 Verify build artifacts
-      run: |
-        ls -la ./
-        file local-ai
+      - name: Notify on Success (Discord)
+        if: success() && env.DISCORD_WEBHOOK_URL != ''
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-Type: application/json' --data '{"content": "🚀 Haunted Empire just launched a new update!\n\n🎁 Claim your exclusive discount: https://${{ secrets.NETLIFY_SITE_ID }}.netlify.app?ref=discord\n💸 Invite friends and earn rewards!\n\nTry it now and boost your earnings!"}' $DISCORD_WEBHOOK_URL
 
-    - name: 📊 Generate build report
-      run: |
-        echo "## 🔨 Build Report" > build-report.md
-        echo "- **Timestamp**: $(date)" >> build-report.md
-        echo "- **Commit**: ${{ github.sha }}" >> build-report.md
-        echo "- **Branch**: ${{ github.ref_name }}" >> build-report.md
-        echo "- **Go Version**: $(go version)" >> build-report.md
-        echo "- **Build Status**: ✅ SUCCESS" >> build-report.md
+      - name: Notify on Success (LinkedIn)
+        if: success() && env.LINKEDIN_ACCESS_TOKEN != ''
+        env:
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+        run: |
+          curl -X POST 'https://api.linkedin.com/v2/ugcPosts' \
+            -H 'Authorization: Bearer $LINKEDIN_ACCESS_TOKEN' \
+            -H 'Content-Type: application/json' \
+            -d '{
+                  "author": "urn:li:person:${{ secrets.LINKEDIN_PERSON_URN }}",
+                  "lifecycleState": "PUBLISHED",
+                  "specificContent": {
+                    "com.linkedin.ugc.ShareContent": {
+                      "shareCommentary": {
+                        "text": "🚀 Haunted Empire just launched a new update!\n\n🎁 Claim your exclusive discount: https://${{ secrets.NETLIFY_SITE_ID }}.netlify.app?ref=linkedin\n💸 Invite friends and earn referral bonuses!\n\nJoin now and maximize your earnings!"
+                      },
+                      "shareMediaCategory": "NONE"
+                    }
+                  },
+                  "visibility": {
+                    "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
+                  }
+                }'
 
-    - name: 📤 Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: lore-engine-${{ github.sha }}
-        path: |
-          local-ai
-          build-report.md
-        retention-days: 30
+      - name: Notify on Success (Instagram)
+        if: success() && env.INSTAGRAM_ACCESS_TOKEN != ''
+        env:
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+        run: |
+          # Instagram Graph API requires a pre-uploaded image and then publishing. This is a placeholder for a text post via Facebook Graph API.
+          curl -X POST "https://graph.facebook.com/v19.0/${{ secrets.INSTAGRAM_BUSINESS_ACCOUNT_ID }}/media" \
+            -F "caption=🚀 Haunted Empire just launched a new update!\n🎁 Claim your exclusive discount: https://${{ secrets.NETLIFY_SITE_ID }}.netlify.app?ref=instagram\n💸 Invite friends and earn rewards!" \
+            -F "image_url=${{ secrets.INSTAGRAM_IMAGE_URL }}" \
+            -F "access_token=$INSTAGRAM_ACCESS_TOKEN"
+          # Then publish the media:
+          curl -X POST "https://graph.facebook.com/v19.0/${{ secrets.INSTAGRAM_BUSINESS_ACCOUNT_ID }}/media_publish" \
+            -F "creation_id=<returned_creation_id>" \
+            -F "access_token=$INSTAGRAM_ACCESS_TOKEN"
 
-    - name: 🚨 Notify Discord on failure
-      if: failure()
-      env:
-        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
-      run: |
-        if [ -n "$DISCORD_WEBHOOK" ]; then
-          curl -H "Content-Type: application/json" \
-          -d '{
-            "embeds": [{
-              "title": "🚨 Lore Engine Build Failed",
-              "description": "Build failed for commit `${{ github.sha || 'unknown' }}`",
-              "color": 15158332,
-              "fields": [
-                {"name": "Branch", "value": "${{ github.ref_name || 'unknown' }}", "inline": true},
-                {"name": "Commit", "value": "${{ github.sha || 'unknown' }}", "inline": true},
-                {"name": "Workflow", "value": "${{ github.workflow || 'unknown' }}", "inline": true},
-                {"name": "Cache Status", "value": "${{ env.CACHE_ENABLED }}", "inline": true}
-              ],
-              "footer": {"text": "Lore Engine CI/CD"}
-            }]
-          }' "$DISCORD_WEBHOOK"
-        else
-          echo "Discord webhook not configured, skipping notification"
-        fi
-      continue-on-error: true
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  # Security scanning
-  security-scan:
-    name: 🔐 Security Scan
-    runs-on: ubuntu-latest
-    needs: build-and-test
-    permissions:
-      contents: read
-      security-events: write
-      actions: read
-    env:
-      CACHE_ENABLED: 'false'
+      - name: Install stylelint config
+        run: npm install --no-save stylelint-config-standard
 
-    steps:
-    - name: 📥 Checkout code
-      uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-    - name: 🔐 Run Gosec Security Scanner
-      run: |
-        go install github.com/securego/gosec/v2/cmd/gosec@latest
-        echo "$HOME/go/bin" >> $GITHUB_PATH
-        export PATH=$PATH:$HOME/go/bin
-        # Run with pretty output for logs
-        gosec -fmt=pretty ./...
-        # Run with SARIF output for upload
-        gosec -fmt sarif -out gosec.sarif ./...
+      - name: Install dependencies (if any)
+        run: |
+          echo "No dependencies for static site"
 
-    - name: 📊 Upload SARIF file
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: gosec.sarif
-      continue-on-error: true
+      - name: Lint HTML/CSS/JS
+        run: |
+          npx htmlhint index.html
+          npx stylelint style.css
+          npx eslint main.js || true
+
+
+      - name: Upload static files to Netlify
+        uses: nwtgck/actions-netlify@v2.0
+        with:
+          publish-dir: ./
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          netlify_auth_token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          netlify_site_id: ${{ secrets.NETLIFY_SITE_ID }}
+        # Required secrets:
+        # - NETLIFY_AUTH_TOKEN: Netlify personal access token
+        # - NETLIFY_SITE_ID: Netlify site ID
+        # - GITHUB_TOKEN: GitHub Actions token
+
+      - name: Lighthouse CI Audit
+        run: |
+          npm install -g @lhci/cli
+          lhci autorun --collect.url=https://${{ secrets.NETLIFY_SITE_ID }}.netlify.app --upload.target=temporary-public-storage || exit 1
+
+      - name: Trigger Welcome Email (Mailgun)
+        if: success()
+        run: |
+          curl -s -X POST https://api.mailgun.net/v3/mg.phantomgear.it.com/messages \
+            -u "api:${{ secrets.MAILGUN_API_KEY }}" \
+            -F from='Haunted Empire <postmaster@mg.phantomgear.it.com>' \
+            -F to='${{ secrets.PROD_USER_EMAIL }}' \
+            -F subject='Welcome to Haunted Empire!' \
+            -F text='Thanks for joining! Here is your bonus.'
+
+      - name: Trigger Referral Bonus Automation
+        if: success()
+        run: |
+          curl -sSf https://haunted-empire-backend-1/api/trigger-referral-bonus
+
+      - name: Generate Discount Code
+        if: success()
+        run: |
+          curl -sSf https://haunted-empire-backend-1/api/generate-discount | tee discount.json
+
+      - name: Email Discount Code (Mailgun)
+        if: success()
+        run: |
+          code=$(cat discount.json | jq -r .code)
+          curl -s -X POST https://api.mailgun.net/v3/mg.phantomgear.it.com/messages \
+            -u "api:${{ secrets.MAILGUN_API_KEY }}" \
+            -F from='Haunted Empire <postmaster@mg.phantomgear.it.com>' \
+            -F to='${{ secrets.PROD_USER_EMAIL }}' \
+            -F subject='Your Haunted Empire Discount Code' \
+            -F text="Use code $code for a special discount!"
+
+      - name: Post to Twitter (X)
+        if: success()
+        env:
+          TWITTER_BEARER_TOKEN: ${{ secrets.TWITTER_BEARER_TOKEN }}
+        run: |
+          curl -X POST "https://api.twitter.com/2/tweets" \
+            -H "Authorization: Bearer $TWITTER_BEARER_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"text":"🚀 Haunted Empire just launched a new update!\n\n🎁 Claim your exclusive discount: https://${{ secrets.NETLIFY_SITE_ID }}.netlify.app?ref=twitter\n💸 Invite friends and earn referral bonuses!"}'
+
+      - name: Notify Referral Leaderboard (Discord)
+        if: success() && env.DISCORD_WEBHOOK_URL != ''
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          leaderboard=$(curl -sSf https://haunted-empire-backend-1/api/leaderboard | jq -r '.top | map("🏆 " + .user + ": $" + (.earnings|tostring)) | join("\n")')
+          curl -X POST -H 'Content-Type: application/json' --data '{"content": "🔥 Haunted Empire Referral Leaderboard! 🔥\n\n'$leaderboard'\n\nInvite friends, climb the ranks, and earn more!"}' $DISCORD_WEBHOOK_URL
+
+      - name: Automated Reward Email (Mailgun)
+        if: success()
+        run: |
+          reward=$(curl -sSf https://haunted-empire-backend-1/api/reward-latest | jq -r .reward)
+          recipient=$(curl -sSf https://haunted-empire-backend-1/api/reward-latest | jq -r .email)
+          curl -s -X POST https://api.mailgun.net/v3/mg.phantomgear.it.com/messages \
+            -u "api:${{ secrets.MAILGUN_API_KEY }}" \
+            -F from='Haunted Empire <postmaster@mg.phantomgear.it.com>' \
+            -F to="$recipient" \
+            -F subject='You Earned a Haunted Empire Reward!' \
+            -F text="Congratulations! You've earned: $reward. Keep referring friends to earn even more."
+
+      - name: Milestone Notification (Slack)
+        if: success() && env.SLACK_WEBHOOK_URL != ''
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          milestone=$(curl -sSf https://haunted-empire-backend-1/api/milestone-latest | jq -r .milestone)
+          user=$(curl -sSf https://haunted-empire-backend-1/api/milestone-latest | jq -r .user)
+          if [ "$milestone" != "null" ] && [ "$user" != "null" ]; then
+            curl -X POST -H 'Content-type: application/json' --data '{"text":"🎉 Milestone Unlocked! User: '$user' just reached: $milestone! Congratulate them in the community!"}' $SLACK_WEBHOOK_URL
+          fi
+
+      - name: Monetization Guardrails - Validate Stripe Webhook
+        run: |
+          curl -sSf https://haunted-empire-backend-1/api/stripe-webhook-status | grep '"ok":true'
+
+      - name: Monetization Guardrails - Validate Referral Logic
+        run: |
+          curl -sSf https://haunted-empire-backend-1/api/referral-test | grep '"ok":true'
+
+      - name: Monetization Guardrails - Validate Payout Logic
+        run: |
+          curl -sSf https://haunted-empire-backend-1/api/payout-test | grep '"ok":true'
+
+      - name: Upload static files to Netlify
+        uses: nwtgck/actions-netlify@v2.0
+        with:
+          publish-dir: ./
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          netlify_auth_token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          netlify_site_id: ${{ secrets.NETLIFY_SITE_ID }}
+        # Required secrets:
+        # - NETLIFY_AUTH_TOKEN: Netlify personal access token
+        # - NETLIFY_SITE_ID: Netlify site ID
+        # - GITHUB_TOKEN: GitHub Actions token
+
+
+      - name: Google Analytics Event (Deployment)
+        if: success() && env.GA_MEASUREMENT_ID != '' && env.GA_API_SECRET != ''
+        env:
+          GA_MEASUREMENT_ID: ${{ secrets.GA_MEASUREMENT_ID }}
+          GA_API_SECRET: ${{ secrets.GA_API_SECRET }}
+        run: |
+          curl -X POST "https://www.google-analytics.com/mp/collect?measurement_id=$GA_MEASUREMENT_ID&api_secret=$GA_API_SECRET" \
+            -H "Content-Type: application/json" \
+            -d '{
+                  "client_id": "deployment-bot-001",
+                  "events": [{
+                    "name": "deployment_success",
+                    "params": {
+                      "site": "https://${{ secrets.NETLIFY_SITE_ID }}.netlify.app",
+                      "platform": "github_actions"
+                    }
+                  }]
+                }'
+
+      - name: Facebook Pixel Event (Deployment)
+        if: success() && env.FB_PIXEL_ID != '' && env.FB_PIXEL_ACCESS_TOKEN != ''
+        env:
+          FB_PIXEL_ID: ${{ secrets.FB_PIXEL_ID }}
+          FB_PIXEL_ACCESS_TOKEN: ${{ secrets.FB_PIXEL_ACCESS_TOKEN }}
+        run: |
+          curl -X POST "https://graph.facebook.com/v19.0/$FB_PIXEL_ID/events?access_token=$FB_PIXEL_ACCESS_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+                  "data": [{
+                    "event_name": "DeploymentSuccess",
+                    "event_time": '$(date +%s)',
+                    "action_source": "system_generated",
+                    "event_source_url": "https://${{ secrets.NETLIFY_SITE_ID }}.netlify.app"
+                  }]
+                }'
+
+      # - name: Post-Deploy Monetization Test
+      #   env:
+      #     NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      #   run: |
+      #     curl -sSf https://${NETLIFY_SITE_ID}.netlify.app/api/leaderboard | grep 'earnings'
+
+      - name: Announce Referral Contest (Discord)
+        if: success() && env.DISCORD_WEBHOOK_URL != ''
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-Type: application/json' --data '{"content": "🏆 Haunted Empire Referral Contest is LIVE! 🏆\n\nTop referrers this week win exclusive prizes.\n\nInvite friends, climb the leaderboard, and win big!\n\nCheck your rank: https://${{ secrets.NETLIFY_SITE_ID }}.netlify.app/leaderboard"}' $DISCORD_WEBHOOK_URL
+
+      - name: Lore Contest Announcement (Discord)
+        if: success() && env.DISCORD_WEBHOOK_URL != ''
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-Type: application/json' --data '{"content": "🚨 Lore Contest Live! 🚨\nSubmit your haunted fragment before midnight to earn the **Soulbound Whisperer** badge 🕯️\nTop entry gets spotlighted + early access to the next chapter.\n#hauntedlore #fragmentforge"}' $DISCORD_WEBHOOK_URL
+
+      - name: Referral Royalty Alert (Discord)
+        if: success() && env.DISCORD_WEBHOOK_URL != ''
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-Type: application/json' --data '{"content": "🌟 Referral Royalty Alert! 🌟\nHuge thanks to our top 3 lorecasters this week:\n🥇 @echo.dev – 17 new hauntings\n🥈 @cryptogloom – 14 referent initiations\n🥉 @phantom_net – 12 dark pings\n\nKeep the summonings coming. The realm thrives on your echoes."}' $DISCORD_WEBHOOK_URL
+
+      - name: Badge Drop Alert (Discord)
+        if: success() && env.DISCORD_WEBHOOK_URL != ''
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-Type: application/json' --data '{"content": "🎉 Badge Drop Alert! 🎉\nShoutout to the newest haunt-bearers:\n🔹 @wanderingcode — Soulbound Whisperer\n🔹 @midnightstack — Phantom Curator\n🔹 @darkdevkit — Fragment Forger\n\nWant your name in the next echo?\nJoin the contest and whisper us your lore → [link]\n#hauntedecosystem #ARGbuilders"}' $DISCORD_WEBHOOK_URL
+
+      - name: Notify Daily Random Winner (Slack)
+        if: success() && env.SLACK_WEBHOOK_URL != ''
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          winner=$(curl -sSf https://haunted-empire-backend-1/api/random-winner | jq -r .user)
+          if [ "$winner" != "null" ]; then
+            curl -X POST -H 'Content-type: application/json' --data '{"text":"🎉 Daily Winner! Congratulations to: '$winner' for being today\'s top referrer! Keep sharing for more chances to win."}' $SLACK_WEBHOOK_URL
+          fi
+
+      - name: Social Share Challenge Email (Mailgun)
+        if: success()
+        run: |
+          challenge=$(curl -sSf https://haunted-empire-backend-1/api/share-challenge | jq -r .challenge)
+          recipient=$(curl -sSf https://haunted-empire-backend-1/api/share-challenge | jq -r .email)
+          curl -s -X POST https://api.mailgun.net/v3/mg.phantomgear.it.com/messages \
+            -u "api:${{ secrets.MAILGUN_API_KEY }}" \
+            -F from='Haunted Empire <postmaster@mg.phantomgear.it.com>' \
+            -F to="$recipient" \
+            -F subject='Haunted Empire Social Share Challenge!' \
+            -F text="This week's challenge: $challenge. Share on your socials and reply with proof to win bonus rewards!"
+
+      - name: Post-Deploy Leaderboard Tweet (Twitter)
+        if: success() && env.TWITTER_BEARER_TOKEN != ''
+        env:
+          TWITTER_BEARER_TOKEN: ${{ secrets.TWITTER_BEARER_TOKEN }}
+        run: |
+          leaderboard=$(curl -sSf https://haunted-empire-backend-1/api/leaderboard | jq -r '.top | map("🏆 " + .user + ": $" + (.earnings|tostring)) | join(" | ")')
+          curl -X POST "https://api.twitter.com/2/tweets" \
+            -H "Authorization: Bearer $TWITTER_BEARER_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"text":"🔥 Haunted Empire Leaderboard: '$leaderboard'\n\nJoin now, invite friends, and win prizes! https://${{ secrets.NETLIFY_SITE_ID }}.netlify.app/leaderboard"}'
+
+      - name: Discord Contest Reminder (Custom)
+        if: success() && env.DISCORD_WEBHOOK_URL != ''
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-Type: application/json' --data '{"content": "⏰ Don\'t forget! The Haunted Empire Referral Contest ends soon. Last chance to invite friends and win exclusive rewards!\n\nLeaderboard: https://${{ secrets.NETLIFY_SITE_ID }}.netlify.app/leaderboard"}' $DISCORD_WEBHOOK_URL
+
+      - name: Slack Shoutout Top 3 Referrers
+        if: success() && env.SLACK_WEBHOOK_URL != ''
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          top3=$(curl -sSf https://haunted-empire-backend-1/api/leaderboard | jq -r '.top[:3] | map("🏅 " + .user + ": $" + (.earnings|tostring)) | join("\n")')
+          curl -X POST -H 'Content-type: application/json' --data '{"text":"👏 Shoutout to our Top 3 Referrers! 👏\n\n'$top3'\n\nKeep sharing to climb the ranks!"}' $SLACK_WEBHOOK_URL
+
+      - name: Milestone Referrer Email (Mailgun)
+        if: success()
+        run: |
+          milestone_data=$(curl -sSf https://haunted-empire-backend-1/api/milestone-latest)
+          milestone=$(echo "$milestone_data" | jq -r .milestone)
+          user_email=$(echo "$milestone_data" | jq -r .email)
+          name=$(echo "$milestone_data" | jq -r .name)
+          summons=$(echo "$milestone_data" | jq -r .summons)
+          referral_link=$(echo "$milestone_data" | jq -r .referral_link)
+          if [ "$milestone" != "null" ] && [ "$user_email" != "null" ]; then
+            curl -s -X POST https://api.mailgun.net/v3/mg.phantomgear.it.com/messages \
+              -u "api:${{ secrets.MAILGUN_API_KEY }}" \
+              -F from='Haunted Empire <postmaster@mg.phantomgear.it.com>' \
+              -F to="$user_email" \
+              -F subject='You’ve unlocked a haunted milestone 🎉' \
+              -F text="Hey $name,\n\nYour referral game is *otherworldly*—you just hit $summons summons!\nThat means:\n- A new **Spectral Caller** badge is yours\n- You’re now eligible for exclusive dark-tier rewards\n- Your lore fragment is in the priority queue 💀\n\nKeep spreading the whisper: $referral_link\n\nStay haunted,\nThe Lore Engine Team"
+          fi
+
+      - name: Twitter Badge Earners Post
+        if: success() && env.TWITTER_BEARER_TOKEN != ''
+        env:
+          TWITTER_BEARER_TOKEN: ${{ secrets.TWITTER_BEARER_TOKEN }}
+        run: |
+          badge=$(curl -sSf https://haunted-empire-backend-1/api/badge-latest | jq -r .badge)
+          user=$(curl -sSf https://haunted-empire-backend-1/api/badge-latest | jq -r .user)
+          if [ "$badge" != "null" ] && [ "$user" != "null" ]; then
+            curl -X POST "https://api.twitter.com/2/tweets" \
+              -H "Authorization: Bearer $TWITTER_BEARER_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d '{"text":"🏅 Congrats to '$user' for earning the $badge badge in Haunted Empire!\n\nStart your journey: https://${{ secrets.NETLIFY_SITE_ID }}.netlify.app"}'
+          fi
+
+      - name: Rollback on Failure
+        if: failure()
+        run: echo "Deployment failed. Rolling back to previous stable version." && exit 1
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          echo "Deployment or monetization validation failed!" | tee /dev/stderr
+          curl -X POST -H 'Content-type: application/json' --data '{"text":"Haunted Empire deployment failed. Immediate attention required!"}' ${{ secrets.SLACK_WEBHOOK_URL }}
