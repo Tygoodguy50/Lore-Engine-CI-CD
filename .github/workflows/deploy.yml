@@ -22,8 +22,8 @@ jobs:
 
       - name: Validate Public URLs
         run: |
-          curl -sSf https://${{ secrets.NETLIFY_SITE_ID }}.netlify.app | grep Haunted
-          curl -sSf https://${{ secrets.NETLIFY_SITE_ID }}.netlify.app/contact.html | grep Contact
+          curl -sSf https://charming-llama-c1e5db.netlify.app | grep Haunted
+          curl -sSf https://charming-llama-c1e5db.netlify.app/contact.html | grep Contact
 
       - name: Set Release Tag
         id: set_tag
@@ -129,7 +129,7 @@ jobs:
         run: |
           echo "Waiting for Netlify site to be live..."
           for i in {1..15}; do
-            status=$(curl -s -o /dev/null -w "%{http_code}" https://${{ secrets.NETLIFY_SITE_ID }}.netlify.app)
+            status=$(curl -s -o /dev/null -w "%{http_code}" https://charming-llama-c1e5db.netlify.app)
             if [ "$status" = "200" ]; then
               echo "Site is live!"
               exit 0
@@ -140,10 +140,27 @@ jobs:
           echo "Netlify site did not become live in time. Exiting."
           exit 1
 
+      - name: Render Backend Health Check
+        env:
+          RENDER_BACKEND_URL: ${{ secrets.RENDER_BACKEND_URL }}
+        run: |
+          echo "Checking Render backend health at $RENDER_BACKEND_URL/health..."
+          for i in {1..10}; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" "$RENDER_BACKEND_URL/health")
+            if [ "$status" = "200" ]; then
+              echo "Render backend is live!"
+              exit 0
+            fi
+            echo "Attempt $i: Backend not live yet (HTTP $status). Waiting 10s..."
+            sleep 10
+          done
+          echo "Render backend did not become live in time. Exiting."
+          exit 1
+
       - name: Lighthouse CI Audit
         run: |
           npm install -g @lhci/cli
-          lhci autorun --collect.url=https://${{ secrets.NETLIFY_SITE_ID }}.netlify.app --upload.target=temporary-public-storage || exit 1
+          lhci autorun --collect.url=https://charming-llama-c1e5db.netlify.app --upload.target=temporary-public-storage || exit 1
 
       - name: Trigger Welcome Email (Mailgun)
         if: success()
