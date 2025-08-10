@@ -22,7 +22,8 @@ Write-Host "[launch] Starting unified launch script..." -ForegroundColor Cyan
 $pids = @{}
 
 function Start-NodeBackend {
-  $serverPath = Join-Path $PSScriptRoot 'haunted-empire-backend-1' 'server.js'
+  $serverDir = Join-Path $PSScriptRoot 'haunted-empire-backend-1'
+  $serverPath = Join-Path $serverDir 'server.js'
   if (-not (Test-Path $serverPath)) { Write-Host "[launch] Node backend not found ($serverPath)" -ForegroundColor Yellow; return }
   Write-Host "[launch] Starting Node backend..." -ForegroundColor Cyan
   $psi = New-Object System.Diagnostics.ProcessStartInfo
