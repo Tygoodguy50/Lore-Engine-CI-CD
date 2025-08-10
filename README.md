@@ -1,6 +1,7 @@
 # LocalAI - Bazel + Bzlmod Build Configuration
 
 ![Backend Health](https://github.com/Tygoodguy50/Lore-Engine-CI-CD/actions/workflows/health-check.yml/badge.svg)
+![Deploy Workflow](https://github.com/Tygoodguy50/Lore-Engine-CI-CD/actions/workflows/deploy.yml/badge.svg)
 
 
 This repository demonstrates how to build LocalAI using Bazel with the modern Bzlmod module system, resolving the common `github.com/pkg/errors` indirect dependency issue.

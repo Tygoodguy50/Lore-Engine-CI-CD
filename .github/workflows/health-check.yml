@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches: [ main ]
+  schedule:
+    - cron: '0 5 * * 1' # Weekly Monday 05:00 UTC health check
 
 jobs:
   health:
@@ -54,3 +56,34 @@ jobs:
         with:
           name: health-check-summary
           path: health-check-summary.md
+
+      - name: Append summary to draft release (health-monitor)
+        if: success()
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $owner = ("${{ github.repository }}" -split '/')[0]
+          $repo  = ("${{ github.repository }}" -split '/')[1]
+            $tag   = 'health-monitor'
+          $summary = Get-Content health-check-summary.md -Raw
+          $timestamp = (Get-Date).ToString('u')
+          $headers = @{ Authorization = "Bearer $env:GITHUB_TOKEN"; 'User-Agent'='health-check-workflow'; Accept='application/vnd.github+json' }
+          $releaseUrl = "https://api.github.com/repos/$owner/$repo/releases/tags/$tag"
+          try {
+            $existing = Invoke-RestMethod -Uri $releaseUrl -Headers $headers -Method Get -ErrorAction Stop
+            $id = $existing.id
+            $oldBody = $existing.body
+            if([string]::IsNullOrWhiteSpace($oldBody)){ $oldBody = "# Health Monitor Release (Draft)" }
+            $newSection = "`n## Run $timestamp`n``````json`n$summary`n``````" -replace "``````","```" # ensure fenced triple backticks
+            $newBody = $oldBody + $newSection
+            $patch = @{ body = $newBody } | ConvertTo-Json -Depth 4
+            Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases/$id" -Headers $headers -Method Patch -Body $patch | Out-Null
+            Write-Host "Updated existing draft release with new health summary." -ForegroundColor Green
+          } catch {
+            Write-Host "Existing release not found. Creating new draft release." -ForegroundColor Yellow
+            $createBody = @{ tag_name=$tag; name='Health Monitor'; draft=$true; body = "# Health Monitor Release (Draft)`n## Run $timestamp`n```json`n$summary`n```" } | ConvertTo-Json -Depth 4
+            Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases" -Headers $headers -Method Post -Body $createBody | Out-Null
+            Write-Host "Created draft release with initial summary." -ForegroundColor Green
+          }
