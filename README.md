@@ -1,19 +1,26 @@
 # LocalAI - Bazel + Bzlmod Build Configuration
 
+![Backend Health](https://github.com/Tygoodguy50/Lore-Engine-CI-CD/actions/workflows/health-check.yml/badge.svg)
+
+
 This repository demonstrates how to build LocalAI using Bazel with the modern Bzlmod module system, resolving the common `github.com/pkg/errors` indirect dependency issue.
 
 ## 🔧 Problem Solved: pkg/errors Indirect Dependency
 
 ### The Issue
+
 When migrating from WORKSPACE to MODULE.bazel, Gazelle often fails to resolve `@com_github_pkg_errors` because:
+
 - It's marked as `indirect` in `go.mod`
 - Bazel's go_deps extension doesn't automatically include all indirect dependencies
 - No `go_deps.override(...)` is supported in Bzlmod
 
 ### The Solution
+
 Our `MODULE.bazel` implements a **dual approach**:
 
 1. **Explicit Module Declaration**: Force include the dependency
+
 ```python
 go_deps.module(
     path = "github.com/pkg/errors",
@@ -22,7 +29,8 @@ go_deps.module(
 )
 ```
 
-2. **Force Repository Inclusion**: Explicitly list in `use_repo(...)`
+1. **Force Repository Inclusion**: Explicitly list in `use_repo(...)`
+
 ```python
 use_repo(
     go_deps,
@@ -34,6 +42,7 @@ use_repo(
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Bazel 7.0+ (with Bzlmod support)
 - Go 1.21+
 - Windows PowerShell (for scripts)
@@ -41,31 +50,36 @@ use_repo(
 ### Build Steps
 
 1. **Clone and Setup**
+
 ```bash
 git clone <your-repo>
 cd LocalAI
 ```
 
-2. **Update Dependencies**
+1. **Update Dependencies**
+
 ```bash
 go mod tidy
 ```
 
-3. **Generate Bazel Files**
+1. **Generate Bazel Files**
+
 ```bash
 bazel run //:gazelle-update-repos
 bazel run //:gazelle
 ```
 
-4. **Build the Project**
+1. **Build the Project**
+
 ```bash
 bazel build //cmd/local-ai:local-ai
 ```
 
-5. **Run Tests**
+1. **Run Tests**
+
 ```bash
 bazel test //...
-```
+```text
 
 ### 🪟 Windows PowerShell Scripts
 
@@ -103,11 +117,13 @@ LocalAI/
 ## 🔍 Key Configuration Files
 
 ### MODULE.bazel
+
 - Uses `rules_go` and `gazelle` for Go support
 - Implements dual fix for `pkg/errors` indirect dependency
 - Includes common dependencies that might be indirect
 
 ### BUILD.bazel Files
+
 - Root: Gazelle configuration and main binary
 - cmd/local-ai: Application binary target  
 - pkg/oci: Library demonstrating pkg/errors usage

@@ -40,12 +40,17 @@ jobs:
         run: |
           $msg = @{content='Backend health check FAILED on self-hosted runner'} | ConvertTo-Json
           try { Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body $msg -ContentType 'application/json' } catch { Write-Warning $_ }
-
-      - name: Success notification (Discord)
-        if: success() && env.DISCORD_WEBHOOK_URL != ''
+      
+      - name: Prepare release notes snippet
+        if: success()
         shell: pwsh
-        env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
-          $msg = @{content='Backend health check passed on self-hosted runner'} | ConvertTo-Json
-          try { Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body $msg -ContentType 'application/json' } catch { Write-Warning $_ }
+          $content = Get-Content HEALTH_CHECK_RESULT.txt -Raw
+          "### Backend Health Check\n\nStatus: PASS\n\nSnippet:\n\n$content" | Out-File health-check-summary.md -Encoding UTF8
+
+      - name: Upload health summary artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: health-check-summary
+          path: health-check-summary.md
