@@ -19,10 +19,28 @@ fi
 # Simple pattern list (add more as needed)
 PATTERNS='(sk_live_|sk_test_|pk_live_|pk_test_|stripe_[A-Za-z0-9]{16,}|CONVERTKIT_API_KEY|TWITTER_BEARER_TOKEN|AIzaSy|ghp_[A-Za-z0-9]{36}|ssh-rsa |BEGIN RSA PRIVATE KEY|BEGIN OPENSSH PRIVATE KEY)'
 
-# Scan staged changes (added/modified) for suspicious tokens
-if git diff --cached -U0 | grep -E "$PATTERNS" >/dev/null 2>&1; then
-  echo -e "${RED}ERROR: Potential secret detected in staged changes. Commit aborted.${NC}" >&2
-  echo "If this is a false positive, adjust the hook patterns." >&2
+# Gather staged files excluding the hooks dir itself
+FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -v '^\.husky/' || true)
+
+if [ -z "$FILES" ]; then
+  echo -e "${GREEN}[pre-commit] No scannable files (skipping secret scan).${NC}" >&2
+  exit 0
+fi
+
+FOUND=0
+for f in $FILES; do
+  # Skip if file appears binary (numstat shows - -)
+  if git diff --cached --numstat -- "$f" 2>/dev/null | awk '{if($1=="-" && $2=="-") exit 0; exit 1}'; then
+    continue
+  fi
+  if git show ":$f" | grep -E "$PATTERNS" >/dev/null 2>&1; then
+    echo -e "${RED}ERROR: Potential secret detected in staged file: $f${NC}" >&2
+    FOUND=1
+  fi
+done
+
+if [ $FOUND -eq 1 ]; then
+  echo "If this is a false positive, adjust the hook patterns or add a suppression mechanism." >&2
   exit 1
 fi
 
