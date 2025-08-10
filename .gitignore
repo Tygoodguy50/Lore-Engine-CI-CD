@@ -35,6 +35,7 @@ logs/
 .env.local
 .env.staging
 .env.production
+config.env
 
 # Dependencies
 vendor/
