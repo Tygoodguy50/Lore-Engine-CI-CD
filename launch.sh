@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Multi-Agent Lore Conflict Detection System
 # Production Launch Script

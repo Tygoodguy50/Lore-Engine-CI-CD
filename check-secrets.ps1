@@ -41,7 +41,13 @@ if (-not (Test-GitHubCLI)) {
 
 # Get repository if not provided
 if (-not $Repository) {
-    $Repository = Read-Host "Enter your GitHub repository (format: owner/repo)"
+    if ($env:GITHUB_REPOSITORY) {
+        $Repository = $env:GITHUB_REPOSITORY
+        Write-Host "Using repository from GITHUB_REPOSITORY: $Repository" -ForegroundColor Yellow
+    } else {
+        Write-Host "No repository provided and GITHUB_REPOSITORY not set. Skipping secret validation (non-interactive)." -ForegroundColor Yellow
+        return
+    }
 }
 
 Write-Host "Checking repository: $Repository" -ForegroundColor Blue
@@ -108,3 +114,5 @@ Write-Host "Next steps:" -ForegroundColor Blue
 Write-Host "1. Push code to trigger deployment" -ForegroundColor White
 Write-Host "2. Monitor GitHub Actions at: https://github.com/$Repository/actions" -ForegroundColor White
 Write-Host "3. Check Discord for deployment notifications" -ForegroundColor White
+Write-Host ""  
+Write-Host "Secret validation script completed." -ForegroundColor Cyan
