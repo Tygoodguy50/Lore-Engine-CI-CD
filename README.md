@@ -169,3 +169,45 @@ If migrating from WORKSPACE-based Bazel:
 ---
 
 This configuration successfully resolves the `pkg/errors` indirect dependency issue while providing a modern, maintainable Bazel build system for LocalAI.
+
+## 🧪 Local Deployment & Health Tasks
+
+The repo includes VS Code tasks (see `.vscode/tasks.json`) to streamline local backend deployment and validation:
+
+- Deploy Haunted Empire Backend: Runs `deploy-backend.ps1` which invokes `launch.ps1 -SkipBash` and waits for a healthy backend on port 3300.
+- Post-Deployment Health Check: Polls port 3300 first, then 8081 (if LocalAI sidecar is enabled) and reports the first healthy endpoint.
+
+### Quick Commands
+
+
+```powershell
+# Deploy backend only
+pwsh ./deploy-backend.ps1
+
+# Tail deployment log
+Get-Content .\DEPLOYMENT_LOG.txt -Tail 40 -Wait
+
+# Manual health probe
+Invoke-WebRequest http://localhost:3300/health | Select-Object -ExpandProperty Content
+```
+
+ 
+### Why two ports?
+
+Port 3300 hosts the Node backend. Port 8081 is reserved for the optional LocalAI / dispatcher stack. Health tasks probe 3300 first to avoid false negatives when 8081 services are intentionally skipped.
+
+ 
+### Customizing Timeout / Ports
+
+`deploy-backend.ps1` accepts `-Ports` and `-TimeoutSeconds` parameters:
+
+```powershell
+pwsh ./deploy-backend.ps1 -Ports 3300,8081 -TimeoutSeconds 90
+```
+
+ 
+### Adding New Automation Tasks
+
+To add a new task without whitelisting additional editor files, keep using the existing `.vscode/tasks.json` (already whitelisted in `.gitignore`).
+
+---
