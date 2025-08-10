@@ -41,10 +41,10 @@ body {
 /* 🕸️ Header Styles */
 .haunted-header {
   background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
-  border-bottom: 2px solid var(--border-color);
+  border-block-end: 2px solid var(--border-color);
   padding: 1rem 2rem;
   position: sticky;
-  top: 0;
+  inset-block-start: 0;
   z-index: 100;
   box-shadow: var(--shadow-card);
 }
@@ -53,8 +53,9 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1400px;
-  margin: 0 auto;
+  max-inline-size: 1400px;
+  margin-block: 0;
+  margin-inline: auto;
 }
 
 .title {
@@ -70,12 +71,12 @@ body {
 }
 
 .pulse-dot {
-  width: 8px;
-  height: 8px;
+  inline-size: 8px;
+  block-size: 8px;
   background: var(--accent-neon);
   border-radius: 50%;
   animation: pulse 2s ease-in-out infinite;
-  margin-left: 0.5rem;
+  margin-inline-start: 0.5rem;
 }
 
 @keyframes pulse {
@@ -129,7 +130,7 @@ body {
 
 .dashboard-card h2 {
   font-size: 1.2rem;
-  margin-bottom: 1rem;
+  margin-block-end: 1rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -168,12 +169,12 @@ body {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 0.75rem;
+  margin-block-end: 0.75rem;
 }
 
 .creator-avatar {
-  width: 40px;
-  height: 40px;
+  inline-size: 40px;
+  block-size: 40px;
   border-radius: 50%;
   background: linear-gradient(45deg, var(--accent-ghost), var(--accent-neon));
   display: flex;
@@ -196,7 +197,7 @@ body {
 .creator-stats {
   display: flex;
   justify-content: space-between;
-  margin-top: 0.5rem;
+  margin-block-start: 0.5rem;
 }
 
 .stat-item {
@@ -225,7 +226,7 @@ body {
 .viral-stats {
   display: flex;
   justify-content: space-around;
-  margin-top: 1rem;
+  margin-block-start: 1rem;
 }
 
 .positive {
@@ -254,7 +255,7 @@ body {
   padding: 0.5rem 1rem;
   border-radius: 20px;
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-block-end: 0.5rem;
 }
 
 .tier-earnings {
@@ -272,21 +273,21 @@ body {
 .progress-to-next label {
   display: block;
   color: var(--text-secondary);
-  margin-bottom: 0.5rem;
+  margin-block-end: 0.5rem;
   font-size: 0.9rem;
 }
 
 .progress-bar {
   background: var(--bg-secondary);
   border-radius: 10px;
-  height: 8px;
+  block-size: 8px;
   overflow: hidden;
-  margin-bottom: 0.5rem;
+  margin-block-end: 0.5rem;
 }
 
 .progress-fill {
   background: linear-gradient(90deg, var(--accent-ghost), var(--accent-neon));
-  height: 100%;
+  block-size: 100%;
   border-radius: 10px;
   transition: width 0.5s ease;
   animation: shimmer 2s ease-in-out infinite;
@@ -306,7 +307,7 @@ body {
 .referral-stats {
   display: flex;
   justify-content: space-around;
-  margin-top: 1rem;
+  margin-block-start: 1rem;
 }
 
 .stat-box {
@@ -322,7 +323,7 @@ body {
 .stat-desc {
   font-size: 0.8rem;
   color: var(--text-muted);
-  margin-top: 0.25rem;
+  margin-block-start: 0.25rem;
 }
 
 /* 🧬 Fragment Performance */
@@ -332,19 +333,19 @@ body {
 
 .table-container {
   overflow-x: auto;
-  margin-bottom: 1rem;
+  margin-block-end: 1rem;
 }
 
 #fragmentTable {
-  width: 100%;
+  inline-size: 100%;
   border-collapse: collapse;
 }
 
 #fragmentTable th,
 #fragmentTable td {
   padding: 0.75rem;
-  text-align: left;
-  border-bottom: 1px solid var(--border-color);
+  text-align: start;
+  border-block-end: 1px solid var(--border-color);
 }
 
 #fragmentTable th {
@@ -369,7 +370,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 
 .remix-trigger-btn:hover {
@@ -382,7 +383,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin-top: 1rem;
+  margin-block-start: 1rem;
 }
 
 .breakdown-item {
@@ -393,8 +394,8 @@ body {
 }
 
 .source-dot {
-  width: 12px;
-  height: 12px;
+  inline-size: 12px;
+  block-size: 12px;
   border-radius: 50%;
 }
 
@@ -447,8 +448,8 @@ body {
 /* 🎮 Floating Action Buttons */
 .floating-actions {
   position: fixed;
-  bottom: 2rem;
-  right: 2rem;
+  inset-block-end: 2rem;
+  inset-inline-end: 2rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -456,8 +457,8 @@ body {
 }
 
 .fab {
-  width: 50px;
-  height: 50px;
+  inline-size: 50px;
+  block-size: 50px;
   border-radius: 50%;
   border: none;
   background: linear-gradient(45deg, var(--accent-ghost), var(--accent-neon));
@@ -479,8 +480,8 @@ body {
 /* 🚨 Toast Notifications */
 .toast-container {
   position: fixed;
-  top: 1rem;
-  right: 1rem;
+  inset-block-start: 1rem;
+  inset-inline-end: 1rem;
   z-index: 200;
   display: flex;
   flex-direction: column;
@@ -492,7 +493,7 @@ body {
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 1rem;
-  min-width: 300px;
+  min-inline-size: 300px;
   animation: slideIn 0.3s ease;
   position: relative;
 }
@@ -537,8 +538,8 @@ body {
   }
   
   .floating-actions {
-    bottom: 1rem;
-    right: 1rem;
+    inset-block-end: 1rem;
+    inset-inline-end: 1rem;
   }
 }
 
@@ -549,7 +550,7 @@ canvas {
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  inline-size: 8px;
 }
 
 ::-webkit-scrollbar-track {
