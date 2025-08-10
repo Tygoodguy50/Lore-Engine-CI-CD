@@ -1,0 +1,51 @@
+name: Backend Health (Self-Hosted)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  health:
+    # Expect a self-hosted runner with PowerShell & Node available. Adjust labels as needed.
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show environment port vars (debug)
+        shell: pwsh
+        run: |
+          Write-Host "BACKEND_PORT=$env:BACKEND_PORT"
+          Write-Host "LOCALAI_PORT=$env:LOCALAI_PORT"
+          Write-Host "HEALTH_PORTS=$env:HEALTH_PORTS"
+
+      - name: Run health-check script
+        shell: pwsh
+        run: |
+          ./scripts/health-check.ps1 -TimeoutSeconds 75
+
+      - name: Upload health artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: health-check-result
+          path: HEALTH_CHECK_RESULT.txt
+
+      - name: Failure notification (Discord)
+        if: failure() && env.DISCORD_WEBHOOK_URL != ''
+        shell: pwsh
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          $msg = @{content='Backend health check FAILED on self-hosted runner'} | ConvertTo-Json
+          try { Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body $msg -ContentType 'application/json' } catch { Write-Warning $_ }
+
+      - name: Success notification (Discord)
+        if: success() && env.DISCORD_WEBHOOK_URL != ''
+        shell: pwsh
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          $msg = @{content='Backend health check passed on self-hosted runner'} | ConvertTo-Json
+          try { Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body $msg -ContentType 'application/json' } catch { Write-Warning $_ }

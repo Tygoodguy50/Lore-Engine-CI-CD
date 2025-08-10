@@ -1,8 +1,22 @@
 param(
-    [string]$DiscordWebhook = $env:DISCORD_WEBHOOK_URL,
-    [int[]]$Ports = @(3300,8081),
-    [int]$TimeoutSeconds = 60
+        [string]$DiscordWebhook = $env:DISCORD_WEBHOOK_URL,
+        [int[]]$Ports = @(3300,8081),
+        [int]$TimeoutSeconds = 60
 )
+
+# Allow environment-based port override when -Ports not explicitly passed
+if(-not $PSBoundParameters.ContainsKey('Ports')){
+    try {
+        $rawList = $env:HEALTH_PORTS
+        if(-not [string]::IsNullOrWhiteSpace($rawList)){
+            $parsed = @(); foreach($tok in ($rawList -split '[,;\s]')){ if($tok -match '^\d+$'){ $parsed += [int]$tok } }
+            if($parsed.Count -gt 0){ $Ports = $parsed }
+        } elseif($env:BACKEND_PORT -or $env:LOCALAI_PORT){
+            $list = @(); if($env:BACKEND_PORT -match '^\d+$'){ $list += [int]$env:BACKEND_PORT }; if($env:LOCALAI_PORT -match '^\d+$'){ $list += [int]$env:LOCALAI_PORT }
+            if($list.Count -gt 0){ $Ports = @(); foreach($p in $list){ if(-not ($Ports -contains $p)){ $Ports += $p } } }
+        }
+    } catch { Write-Host "[deploy] Env port override parse error: $($_.Exception.Message)" -ForegroundColor Yellow }
+}
 
 $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path

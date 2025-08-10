@@ -205,6 +205,24 @@ Port 3300 hosts the Node backend. Port 8081 is reserved for the optional LocalAI
 pwsh ./deploy-backend.ps1 -Ports 3300,8081 -TimeoutSeconds 90
 ```
 
+You can also override default port probing via environment variables (no need to pass `-Ports`):
+
+Priority order when `-Ports` is omitted:
+
+1. `HEALTH_PORTS` (comma / space / semicolon separated list, e.g. `HEALTH_PORTS=3301,8090`)
+2. `BACKEND_PORT` plus optional `LOCALAI_PORT` (combined, duplicates removed)
+3. Built-in default `3300,8081`
+
+Examples:
+
+```powershell
+$env:BACKEND_PORT=4400; pwsh ./deploy-backend.ps1
+$env:BACKEND_PORT=4400; $env:LOCALAI_PORT=9001; pwsh ./scripts/health-check.ps1
+$env:HEALTH_PORTS='5500 9100'; pwsh ./launch.ps1
+```
+
+Explicit `-Ports` always overrides env-based values.
+
  
 ### Adding New Automation Tasks
 

@@ -20,6 +20,20 @@ param(
   [string]$RequireServiceName
 )
 
+# Env-based override (only if -Ports not explicitly provided)
+if(-not $PSBoundParameters.ContainsKey('Ports')){
+  try {
+    $rawList = $env:HEALTH_PORTS
+    if(-not [string]::IsNullOrWhiteSpace($rawList)){
+      $parsed = @(); foreach($tok in ($rawList -split '[,;\s]')){ if($tok -match '^\d+$'){ $parsed += [int]$tok } }
+      if($parsed.Count -gt 0){ $Ports = $parsed }
+    } elseif($env:BACKEND_PORT -or $env:LOCALAI_PORT){
+      $list = @(); if($env:BACKEND_PORT -match '^\d+$'){ $list += [int]$env:BACKEND_PORT }; if($env:LOCALAI_PORT -match '^\d+$'){ $list += [int]$env:LOCALAI_PORT }
+      if($list.Count -gt 0){ $Ports = @(); foreach($p in $list){ if(-not ($Ports -contains $p)){ $Ports += $p } } }
+    }
+  } catch { Write-Host "[health] Env port override parse error: $($_.Exception.Message)" -ForegroundColor Yellow }
+}
+
 $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $here

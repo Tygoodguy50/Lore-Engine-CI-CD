@@ -6,20 +6,54 @@
     - Poll health endpoints on candidate ports until healthy or timeout
     - Write status artifacts: DEPLOYMENT_LOG.txt, HEALTH_CHECK_RESULT.txt
   Usage:
-    ./launch.ps1 -Ports 8081,3002 -TimeoutSeconds 60 -SkipBash
+  ./launch.ps1 -Ports 8081,3300 -TimeoutSeconds 60 -SkipBash
 #>
 param(
-  [int[]]$Ports = @(8081,3002),
+  # Order ports with backend first for faster success detection (can be overridden by env vars)
+  [int[]]$Ports = @(3300,8081),
   [int]$TimeoutSeconds = 60,
   [switch]$SkipBash,
   [switch]$SkipNode
 )
+
+# Env-based override precedence (only when -Ports NOT explicitly passed):
+# 1) HEALTH_PORTS (comma/space/semicolon separated list) e.g. "3300,8081"
+# 2) BACKEND_PORT [+ LOCALAI_PORT]
+# 3) Built-in default @(3300,8081)
+if(-not $PSBoundParameters.ContainsKey('Ports')){
+  try {
+    $rawList = $env:HEALTH_PORTS
+    if(-not [string]::IsNullOrWhiteSpace($rawList)){
+      $parsed = @();
+      foreach($tok in ($rawList -split '[,;\s]')){ if($tok -match '^\d+$'){ $parsed += [int]$tok } }
+      if($parsed.Count -gt 0){ $Ports = $parsed }
+    } elseif($env:BACKEND_PORT -or $env:LOCALAI_PORT){
+      $list = @();
+      if($env:BACKEND_PORT -match '^\d+$'){ $list += [int]$env:BACKEND_PORT }
+      if($env:LOCALAI_PORT -match '^\d+$'){ $list += [int]$env:LOCALAI_PORT }
+      if($list.Count -gt 0){
+        # Remove duplicates preserving order
+        $Ports = @(); foreach($p in $list){ if(-not ($Ports -contains $p)){ $Ports += $p } }
+      }
+    }
+  } catch { Write-Host "[launch] Env port override parse error: $($_.Exception.Message)" -ForegroundColor Yellow }
+}
 
 $ErrorActionPreference = 'Stop'
 $startTime = Get-Date
 Write-Host "[launch] Starting unified launch script..." -ForegroundColor Cyan
 
 $pids = @{}
+
+# Handle accidental concatenation of ports (e.g., 33008081) if PowerShell parsed a single int
+if($Ports.Count -eq 1 -and $Ports[0] -gt 65535){
+  $digits = ($Ports[0]).ToString()
+  $groups = [regex]::Matches($digits,'\d{4}')
+  if($groups.Count -gt 1){
+    $Ports = @(); foreach($g in $groups){ $Ports += [int]$g.Value }
+    Write-Host "[launch] Corrected concatenated port argument -> $($Ports -join ', ')" -ForegroundColor Yellow
+  }
+}
 
 function Start-NodeBackend {
   # Backend is a sibling directory to this repo root
@@ -28,26 +62,51 @@ function Start-NodeBackend {
   $serverPath = $null
   foreach ($c in $entryCandidates) { $p = Join-Path $serverDir $c; if (Test-Path $p) { $serverPath = $p; break } }
   if (-not $serverPath) { Write-Host "[launch] Node backend entry not found (checked: $($entryCandidates -join ', '))" -ForegroundColor Yellow; return }
-  Write-Host "[launch] Starting Node backend using $(Split-Path $serverPath -Leaf)..." -ForegroundColor Cyan
+  $which = Split-Path $serverPath -Leaf
+  Write-Host "[launch] Starting Node backend using $which..." -ForegroundColor Cyan
   $logDir = Join-Path $PSScriptRoot 'logs'; if (-not (Test-Path $logDir)) { New-Item -ItemType Directory -Path $logDir | Out-Null }
   $stdoutLog = Join-Path $logDir 'backend.stdout.log'
   $stderrLog = Join-Path $logDir 'backend.stderr.log'
-  if (Test-Path $stdoutLog) { Remove-Item $stdoutLog -Force }
-  if (Test-Path $stderrLog) { Remove-Item $stderrLog -Force }
-  $psi = New-Object System.Diagnostics.ProcessStartInfo
-  $psi.FileName = 'node'
-  $psi.Arguments = '"' + $serverPath + '"'
-  $psi.WorkingDirectory = (Split-Path $serverPath -Parent)
-  $psi.RedirectStandardOutput = $true
-  $psi.RedirectStandardError = $true
-  $psi.UseShellExecute = $false
-  $proc = New-Object System.Diagnostics.Process
-  $proc.StartInfo = $psi
-  $null = $proc.Start()
+  # Use unique per-session log files to avoid sharing violations
+  $sessionTag = Get-Date -Format 'yyyyMMdd_HHmmss_fff'
+  $sessionStdout = Join-Path $logDir "backend.$sessionTag.stdout.log"
+  $sessionStderr = Join-Path $logDir "backend.$sessionTag.stderr.log"
+  "[launch] Session $sessionTag starting $(Get-Date -Format o)" | Out-File $sessionStdout
+  "[launch] Session $sessionTag starting $(Get-Date -Format o)" | Out-File $sessionStderr
+  # Point canonical log names to newest session (copy header)
+  try { Copy-Item $sessionStdout $stdoutLog -Force } catch {}
+  try { Copy-Item $sessionStderr $stderrLog -Force } catch {}
+  # Attempt to free target backend port (assumes first provided port or default 3300 after migration from 3002)
+  $backendPort = 3300
+  if($Ports -and $Ports.Length -gt 0){ $backendPort = $Ports[0] }
+  try {
+    $conns = Get-NetTCPConnection -LocalPort $backendPort -ErrorAction SilentlyContinue | Where-Object { $_.State -eq 'Listen' }
+    foreach($c in $conns){
+      try {
+        $ownPid = $c.OwningProcess
+        if($ownPid){
+          $p = Get-Process -Id $ownPid -ErrorAction SilentlyContinue
+          if($p -and $p.ProcessName -match 'node'){
+            Write-Host "[launch] Terminating existing node on port $backendPort (PID $ownPid)" -ForegroundColor Yellow
+            Stop-Process -Id $ownPid -Force -ErrorAction SilentlyContinue
+            Start-Sleep -Milliseconds 300
+          }
+        }
+      } catch {}
+    }
+  } catch { Write-Host "[launch] Port free attempt skipped: $($_.Exception.Message)" -ForegroundColor DarkGray }
+  # Kill any stale node process still pointing at backend dir to avoid serving old code
+  Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $_.CommandLine -like "*haunted-empire-backend-1*" } | ForEach-Object { try { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue } catch {} }
+  # Export PORT env var for this process so index.js respects alternate port
+  $prevPortEnv = $env:PORT
+  $env:PORT = $backendPort
+  $proc = Start-Process -FilePath node -ArgumentList $serverPath -WorkingDirectory $serverDir -RedirectStandardOutput $sessionStdout -RedirectStandardError $sessionStderr -PassThru -WindowStyle Hidden
+  # Restore environment to avoid leaking to later steps
+  $env:PORT = $prevPortEnv
   $pids['node'] = $proc.Id
-  Write-Host "[launch] Node backend PID: $($proc.Id)" -ForegroundColor Green
-  Start-Job -ScriptBlock { param($pid,$out,$err)
-      try { $p = Get-Process -Id $pid -ErrorAction Stop; while(-not $p.HasExited){ if($p.StandardOutput.Peek() -ge 0){ $p.StandardOutput.ReadToEnd() | Add-Content $out }; if($p.StandardError.Peek() -ge 0){ $p.StandardError.ReadToEnd() | Add-Content $err }; Start-Sleep -Milliseconds 300; $p.Refresh() } } catch {} } -ArgumentList $proc.Id,$stdoutLog,$stderrLog | Out-Null
+  Write-Host "[launch] Node backend PID: $($proc.Id) (logs: $sessionStdout / $sessionStderr)" -ForegroundColor Green
+  # Best effort marker (ignore sharing violation)
+  try { "[launch] Started $which at $(Get-Date -Format o) PID=$($proc.Id)" | Add-Content $sessionStdout } catch {}
 }
 
 function Start-BashLaunch {
