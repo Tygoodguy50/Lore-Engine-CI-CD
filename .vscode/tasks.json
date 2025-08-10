@@ -1,0 +1,326 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+	{
+	  "type": "process",
+	  "label": "Deploy Haunted Empire Backend",
+	  "command": "powershell.exe",
+	  "args": ["-NoProfile","-ExecutionPolicy","Bypass","-File","./deploy-backend.ps1"],
+	  "group": "build",
+	  "problemMatcher": ["$tsc"],
+	  "presentation": {"echo": true,"reveal": "always","focus": false,"panel": "shared"}
+	},
+	{
+	  "label": "Post-Deployment Health Check",
+	  "type": "shell",
+	  "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"& { $out='HEALTH_CHECK_RESULT.txt'; $ports=@(3300,8081); try { ./check-secrets.ps1; ./launch.ps1 -SkipBash; if($LASTEXITCODE -ne 0){ throw 'launch failed' }; $healthy=$false; foreach($p in $ports){ try { $r=Invoke-WebRequest -Uri \"http://localhost:$p/health\" -UseBasicParsing -TimeoutSec 8; if($r.StatusCode -eq 200){ $healthy=$true; $r.Content | Out-File $out; break } } catch {} }; if(-not $healthy){ throw 'no health endpoints succeeded' }; if($env:DISCORD_WEBHOOK_URL){ $body=@{content='Health check passed'}; Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body|ConvertTo-Json) -ContentType 'application/json' } exit 0 } catch { ('Health check failed: ' + $_) | Out-File $out; if($env:DISCORD_WEBHOOK_URL){ $body=@{content='Health check failed: ' + $_}; Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body|ConvertTo-Json) -ContentType 'application/json' } exit 1 } }\"",
+	  "group": "test",
+	  "presentation": {
+		"echo": true,
+		"reveal": "always",
+		"focus": false,
+		"panel": "shared"
+	  },
+	  "problemMatcher": []
+	},
+	{
+	  "label": "Setup Monitoring",
+	  "type": "shell",
+	  "command": "echo Monitoring enabled > monitoring-status.txt; powershell.exe -Command \"if ($?) { Write-Output 'Monitoring setup complete' | Out-File monitoring-status.txt -Append } else { Write-Output 'Monitoring setup failed' | Out-File monitoring-status.txt -Append }\"",
+	  "group": "build",
+	  "presentation": {
+		"echo": true,
+		"reveal": "always",
+		"focus": false,
+		"panel": "shared"
+	  },
+	  "problemMatcher": []
+	},
+	{
+	  "label": "Further Automation",
+	  "type": "shell",
+	  "command": "powershell.exe -ExecutionPolicy Bypass -File .\\configure-github-secrets.ps1; bash ./deploy-community-api.sh; powershell.exe -Command \"if ($?) { Write-Output 'Further automation succeeded' | Out-File automation-status.txt } else { Write-Output 'Further automation failed' | Out-File automation-status.txt }\"",
+	  "group": "build",
+	  "presentation": {
+		"echo": true,
+		"reveal": "always",
+		"focus": false,
+		"panel": "shared"
+	  },
+	  "problemMatcher": []
+	}
+	,
+	{
+	  "label": "Automated Environment Validation",
+	  "type": "shell",
+	  "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"& { $log='ENV_VALIDATION_LOG.txt'; try { ./load-env.ps1; ./check-secrets.ps1; if($LASTEXITCODE -ne 0){ throw 'check-secrets failed' }; 'Environment validation passed' | Out-File $log; if($env:DISCORD_WEBHOOK_URL){ $body=@{content='Environment validation passed'}; Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body|ConvertTo-Json) -ContentType 'application/json' } exit 0 } catch { ('Environment validation failed: ' + $_) | Out-File $log; if($env:DISCORD_WEBHOOK_URL){ $body=@{content='Environment validation failed: ' + $_}; Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body|ConvertTo-Json) -ContentType 'application/json' } exit 1 } }\"",
+	  "group": "test",
+	  "presentation": {
+		"echo": true,
+		"reveal": "always",
+		"focus": false,
+		"panel": "shared"
+	  },
+	  "problemMatcher": []
+	},
+	{
+	  "label": "Log Monitoring",
+	  "type": "shell",
+	  "command": "powershell.exe -ExecutionPolicy Bypass -File .\\launch.ps1; Get-Content .\\LORE_DISPATCHER_STATUS.md -Wait; powershell.exe -Command \"if ($?) { Write-Output 'Log monitoring active' | Out-File LOG_MONITOR_STATUS.txt } else { Write-Output 'Log monitoring failed' | Out-File LOG_MONITOR_STATUS.txt }\"",
+	  "group": "test",
+	  "presentation": {
+		"echo": true,
+		"reveal": "always",
+		"focus": false,
+		"panel": "shared"
+	  },
+	  "problemMatcher": []
+	},
+	{
+	  "label": "Webhook Integration Test",
+	  "type": "shell",
+	  "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"& { $log='WEBHOOK_TEST_LOG.txt'; try { $body=@{event_type='test'; message='Environment test'}; $resp = Invoke-RestMethod -Uri 'http://localhost:8081/webhook/haunted' -Method Post -Body ($body|ConvertTo-Json) -ContentType 'application/json'; 'Webhook test succeeded' | Out-File $log; if($env:DISCORD_WEBHOOK_URL){ $notify=@{content='Webhook test succeeded'}; Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($notify|ConvertTo-Json) -ContentType 'application/json' } exit 0 } catch { ('Webhook test failed: ' + $_) | Out-File $log; if($env:DISCORD_WEBHOOK_URL){ $notify=@{content='Webhook test failed: ' + $_}; Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($notify|ConvertTo-Json) -ContentType 'application/json' } exit 1 } }\"",
+	  "group": "test",
+	  "presentation": {
+		"echo": true,
+		"reveal": "always",
+		"focus": false,
+		"panel": "shared"
+	  },
+	  "problemMatcher": []
+	},
+	// Enhanced workflow automation tasks with advanced features
+	{
+	  "label": "Restart Backend Service",
+	  "type": "shell",
+	  "command": "powershell.exe -ExecutionPolicy Bypass -File .\\launch.ps1; powershell.exe -Command \"if ($?) { Write-Output 'Backend restarted at ' (Get-Date) | Out-File RESTART_LOG.txt } else { Write-Output 'Backend restart failed' | Out-File RESTART_LOG.txt }\"",
+	  "group": "build",
+	  "presentation": {
+		"echo": true,
+		"reveal": "always",
+		"focus": false,
+		"panel": "shared"
+	  },
+	  "problemMatcher": []
+	},
+	{
+	  "label": "Backup Environment Config",
+	  "type": "shell",
+	  "command": "powershell.exe -Command \"if (Test-Path 'config.env') { $ts = Get-Date -Format yyyyMMddHHmmss; Copy-Item 'config.env' \"config.env.$ts.bak\"; Write-Output 'Backup created: config.env.$ts.bak' | Out-File BACKUP_LOG.txt } else { Write-Error 'config.env not found' }\"",
+	  "group": "build",
+	  "presentation": {
+		"echo": true,
+		"reveal": "always",
+		"focus": false,
+		"panel": "shared"
+	  },
+	  "problemMatcher": []
+	},
+	{
+	  "label": "Clear Log Files",
+	  "type": "shell",
+	  "command": "powershell.exe -Command \"Get-ChildItem -Path . -Filter *.log | Remove-Item -Force; Write-Output 'Log files cleared at ' (Get-Date) | Out-File CLEAR_LOG.txt\"",
+	  "group": "build",
+	  "presentation": {
+		"echo": true,
+		"reveal": "always",
+		"focus": false,
+		"panel": "shared"
+	  },
+	  "problemMatcher": []
+	},
+	{
+	  "label": "Generate Deployment Report",
+	  "type": "shell",
+	  "command": "powershell.exe -ExecutionPolicy Bypass -Command \"Get-Date | Out-File DEPLOYMENT_REPORT.md; Get-Content LORE_DISPATCHER_STATUS.md | Add-Content DEPLOYMENT_REPORT.md; Write-Output 'Deployment report generated at ' (Get-Date) | Out-File DEPLOYMENT_REPORT_LOG.txt\"",
+	  "group": "build",
+	  "presentation": {
+		"echo": true,
+		"reveal": "always",
+		"focus": false,
+		"panel": "shared"
+	  },
+	  "problemMatcher": []
+	},
+	{
+	  "label": "Run All Diagnostics",
+	  "type": "shell",
+	  "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"& { $log='DIAGNOSTICS_LOG.txt'; try { ./check-secrets.ps1; ./launch.ps1; if($LASTEXITCODE -ne 0){ throw 'launch failed' }; ./load-env.ps1; if($LASTEXITCODE -ne 0){ throw 'load-env failed' }; ('Diagnostics completed at ' + (Get-Date).ToString('o')) | Out-File $log; if($env:DISCORD_WEBHOOK_URL){ $body=@{content='Diagnostics completed'}; Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body|ConvertTo-Json) -ContentType 'application/json' } exit 0 } catch { ('Diagnostics failed: ' + $_) | Out-File $log; if($env:DISCORD_WEBHOOK_URL){ $body=@{content='Diagnostics failed: ' + $_}; Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body|ConvertTo-Json) -ContentType 'application/json' } exit 1 } }\"",
+	  "group": "test",
+	  "presentation": {
+		"echo": true,
+		"reveal": "always",
+		"focus": false,
+		"panel": "shared"
+	  },
+	  "problemMatcher": []
+	},
+	{
+	  "label": "Sync Frontend Assets",
+	  "type": "shell",
+	  "command": "powershell.exe -Command \"if (Test-Path '..\\Haunted-empire-website-1') { xcopy ..\\Haunted-empire-website-1\\*.* .\\frontend-assets\\ /E /Y; Write-Output 'Frontend assets synced at ' (Get-Date) | Out-File SYNC_LOG.txt } else { Write-Error 'Frontend source not found' }\"",
+	  "group": "build",
+	  "presentation": {
+		"echo": true,
+		"reveal": "always",
+		"focus": false,
+		"panel": "shared"
+	  },
+	  "problemMatcher": []
+	},
+	{
+	  "type": "shell",
+	  "label": "Deploy Haunted Empire Backend (Advanced)",
+	"command": "powershell.exe -Command { if (Test-Path './launch.bat') { ./launch.bat } else { Write-Error 'launch.bat not found'; exit 1 } if ($LASTEXITCODE -eq 0) { $body = @{content='Deployment succeeded by ' + $env:USERNAME}; if($env:DISCORD_WEBHOOK_URL){ Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body | ConvertTo-Json) -ContentType 'application/json' } Write-Output 'Deployment succeeded' | Out-File DEPLOYMENT_LOG.txt -Append } else { $body = @{content='Deployment failed by ' + $env:USERNAME}; if($env:DISCORD_WEBHOOK_URL){ Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body | ConvertTo-Json) -ContentType 'application/json' } Write-Output 'Deployment failed' | Out-File DEPLOYMENT_LOG.txt -Append; exit 1 } }",
+	  "group": "build",
+	  "problemMatcher": ["$tsc"],
+	  "presentation": {
+		"echo": true,
+		"reveal": "always",
+		"focus": false,
+		"panel": "shared"
+	  },
+	  "options": {
+		"env": {
+		  "DEPLOY_SECRET": "${env:DEPLOY_SECRET}"
+		}
+	  }
+	},
+	{
+	  "label": "Post-Deployment Health Check (Advanced)",
+	  "type": "shell",
+	  "command": "powershell.exe -Command \"$service = Get-Service -Name 'HauntedEmpireBackend' -ErrorAction SilentlyContinue; $ports=@(3300,8081); if ($service -and $service.Status -eq 'Running') { powershell.exe -ExecutionPolicy Bypass -File .\\check-secrets.ps1; powershell.exe -ExecutionPolicy Bypass -File .\\launch.ps1 -SkipBash; $healthy=$false; foreach($p in $ports){ try { $r=Invoke-WebRequest -Uri ('http://localhost:'+$p+'/health') -UseBasicParsing -TimeoutSec 8; if($r.StatusCode -eq 200){ $healthy=$true; $r.Content | Out-File HEALTH_CHECK_RESULT.txt; break } } catch {} }; if(-not $healthy){ 'Advanced health check failed: no endpoints responded 200' | Out-File HEALTH_CHECK_RESULT.txt; $body = @{content='Health check failed: no healthy endpoints'}; if($env:DISCORD_WEBHOOK_URL){ Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body | ConvertTo-Json) -ContentType 'application/json' }; exit 1 }; $body = @{content='Health check passed'}; if($env:DISCORD_WEBHOOK_URL){ Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body | ConvertTo-Json) -ContentType 'application/json' } } else { Write-Output 'Service not running' | Out-File HEALTH_CHECK_RESULT.txt; $body = @{content='Health check failed: service not running'}; if($env:DISCORD_WEBHOOK_URL){ Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body | ConvertTo-Json) -ContentType 'application/json' }; exit 1 }\"",
+	  "group": "test",
+	  "presentation": {
+		"echo": true,
+		"reveal": "always",
+		"focus": false,
+		"panel": "shared"
+	  },
+	  "options": {
+		"env": {
+		  "HEALTH_SECRET": "${env:HEALTH_SECRET}"
+		}
+	  }
+	},
+	{
+	  "label": "Sync Frontend Assets (Advanced)",
+	  "type": "shell",
+	  "command": "powershell.exe -Command \"if (Test-Path '..\\Haunted-empire-website-1') { $changed = (Get-ChildItem ..\\Haunted-empire-website-1 -Recurse | Where-Object { $_.LastWriteTime -gt (Get-Date).AddMinutes(-10) }); if ($changed) { xcopy ..\\Haunted-empire-website-1\\*.* .\\frontend-assets\\ /E /Y; Write-Output 'Frontend assets synced at ' (Get-Date) | Out-File SYNC_LOG.txt; $body = @{content='Frontend assets synced'}; if($env:DISCORD_WEBHOOK_URL){ Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body | ConvertTo-Json) -ContentType 'application/json' } } else { Write-Output 'No changes detected' | Out-File SYNC_LOG.txt } } else { Write-Error 'Frontend source not found'; exit 1 }\"",
+	  "group": "build",
+	  "presentation": {
+		"echo": true,
+		"reveal": "always",
+		"focus": false,
+		"panel": "shared"
+	  },
+	  "options": {
+		"env": {
+		  "SYNC_SECRET": "${env:SYNC_SECRET}"
+		}
+	  }
+	},
+	// Setup Monitoring (Advanced)
+	{
+	  "label": "Setup Monitoring (Advanced)",
+	  "type": "shell",
+	  "command": "powershell.exe -Command \"$monitoringFile = 'monitoring-status.txt'; echo Monitoring enabled > $monitoringFile; if ($?) { Write-Output 'Monitoring setup complete' | Out-File $monitoringFile -Append; $body = @{content='Monitoring setup complete'}; if($env:DISCORD_WEBHOOK_URL){ Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body | ConvertTo-Json) -ContentType 'application/json' } } else { Write-Output 'Monitoring setup failed' | Out-File $monitoringFile -Append; $body = @{content='Monitoring setup failed'}; if($env:DISCORD_WEBHOOK_URL){ Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body | ConvertTo-Json) -ContentType 'application/json' } exit 1 }\"",
+	  "group": "build",
+	  "presentation": {
+		"echo": true,
+		"reveal": "always",
+		"focus": false,
+		"panel": "shared"
+	  },
+	  "options": {
+		"env": {
+		  "MONITOR_SECRET": "${env:MONITOR_SECRET}"
+		}
+	  }
+	},
+	// Further Automation (Advanced)
+	{
+	  "label": "Further Automation (Advanced)",
+	  "type": "shell",
+	  "command": "powershell.exe -ExecutionPolicy Bypass -File .\\configure-github-secrets.ps1; bash ./deploy-community-api.sh; powershell.exe -Command \"if ($?) { Write-Output 'Further automation succeeded' | Out-File automation-status.txt; $body = @{content='Further automation succeeded'}; if($env:DISCORD_WEBHOOK_URL){ Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body | ConvertTo-Json) -ContentType 'application/json' } } else { Write-Output 'Further automation failed' | Out-File automation-status.txt; $body = @{content='Further automation failed'}; if($env:DISCORD_WEBHOOK_URL){ Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body | ConvertTo-Json) -ContentType 'application/json' } exit 1 }\"",
+	  "group": "build",
+	  "presentation": {
+		"echo": true,
+		"reveal": "always",
+		"focus": false,
+		"panel": "shared"
+	  },
+	  "options": {
+		"env": {
+		  "AUTOMATION_SECRET": "${env:AUTOMATION_SECRET}"
+		}
+	  }
+	},
+	// Automated Environment Validation (Advanced)
+	{
+	  "label": "Automated Environment Validation (Advanced)",
+	  "type": "shell",
+	  "command": "powershell.exe -ExecutionPolicy Bypass -File .\\load-env.ps1; powershell.exe -ExecutionPolicy Bypass -File .\\check-secrets.ps1; powershell.exe -Command \"if ($?) { Write-Output 'Environment validation passed' | Out-File ENV_VALIDATION_LOG.txt; $body = @{content='Environment validation passed'}; if($env:DISCORD_WEBHOOK_URL){ Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body | ConvertTo-Json) -ContentType 'application/json' } } else { Write-Output 'Environment validation failed' | Out-File ENV_VALIDATION_LOG.txt; $body = @{content='Environment validation failed'}; if($env:DISCORD_WEBHOOK_URL){ Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body | ConvertTo-Json) -ContentType 'application/json' } exit 1 }\"",
+	  "group": "test",
+	  "presentation": {
+		"echo": true,
+		"reveal": "always",
+		"focus": false,
+		"panel": "shared"
+	  },
+	  "options": {
+		"env": {
+		  "ENV_SECRET": "${env:ENV_SECRET}"
+		}
+	  }
+	},
+	// Log Monitoring (Advanced)
+	{
+	  "label": "Log Monitoring (Advanced)",
+	  "type": "shell",
+	  "command": "powershell.exe -ExecutionPolicy Bypass -File .\\launch.ps1; Get-Content .\\LORE_DISPATCHER_STATUS.md -Wait; powershell.exe -Command \"if ($?) { Write-Output 'Log monitoring active' | Out-File LOG_MONITOR_STATUS.txt; $body = @{content='Log monitoring active'}; if($env:DISCORD_WEBHOOK_URL){ Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body | ConvertTo-Json) -ContentType 'application/json' } } else { Write-Output 'Log monitoring failed' | Out-File LOG_MONITOR_STATUS.txt; $body = @{content='Log monitoring failed'}; if($env:DISCORD_WEBHOOK_URL){ Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body | ConvertTo-Json) -ContentType 'application/json' } exit 1 }\"",
+	  "group": "test",
+	  "presentation": {
+		"echo": true,
+		"reveal": "always",
+		"focus": false,
+		"panel": "shared"
+	  },
+	  "options": {
+		"env": {
+		  "LOG_SECRET": "${env:LOG_SECRET}"
+		}
+	  }
+	},
+	// Webhook Integration Test (Advanced)
+	{
+	  "label": "Webhook Integration Test (Advanced)",
+	  "type": "shell",
+	  "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"& { $log='WEBHOOK_TEST_LOG.txt'; try { $payload=@{event_type='test'; message='Environment test'}; $resp = Invoke-RestMethod -Uri 'http://localhost:8081/webhook/haunted' -Method Post -Body ($payload|ConvertTo-Json) -ContentType 'application/json'; 'Webhook test succeeded' | Out-File $log; if($env:DISCORD_WEBHOOK_URL){ $notify=@{content='Webhook test succeeded'}; Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($notify|ConvertTo-Json) -ContentType 'application/json' } exit 0 } catch { ('Webhook test failed: ' + $_) | Out-File $log; if($env:DISCORD_WEBHOOK_URL){ $notify=@{content='Webhook test failed: ' + $_}; Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($notify|ConvertTo-Json) -ContentType 'application/json' } exit 1 } }\"",
+	  "group": "test",
+	  "presentation": {
+		"echo": true,
+		"reveal": "always",
+		"focus": false,
+		"panel": "shared"
+	  },
+	  "options": {
+		"env": {
+		  "WEBHOOK_SECRET": "${env:WEBHOOK_SECRET}"
+		}
+	  }
+	},
+	{
+	  "label": "Echo Test",
+	  "type": "shell",
+	  "command": "echo Hello World",
+	  "group": "build",
+	  "presentation": {
+		"echo": true,
+		"reveal": "always",
+		"focus": false,
+		"panel": "shared"
+	  }
+	}
+  ]
+}

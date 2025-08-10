@@ -12,6 +12,7 @@ coverage.html
 
 # IDE and editor files
 .vscode/
+!.vscode/tasks.json
 .idea/
 *.swp
 *.swo
