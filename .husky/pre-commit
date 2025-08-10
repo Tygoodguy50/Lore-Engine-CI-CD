@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Pre-commit hook to prevent committing secrets or raw config.env
+
+set -euo pipefail
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+echo -e "${YELLOW}[pre-commit] Secret scan starting...${NC}" >&2
+
+# Block if config.env staged
+if git diff --cached --name-only | grep -q '^config.env$'; then
+  echo -e "${RED}ERROR: config.env is staged. Remove it before committing.${NC}" >&2
+  exit 1
+fi
+
+# Simple pattern list (add more as needed)
+PATTERNS='(sk_live_|sk_test_|pk_live_|pk_test_|stripe_[A-Za-z0-9]{16,}|CONVERTKIT_API_KEY|TWITTER_BEARER_TOKEN|AIzaSy|ghp_[A-Za-z0-9]{36}|ssh-rsa |BEGIN RSA PRIVATE KEY|BEGIN OPENSSH PRIVATE KEY)'
+
+# Scan staged changes (added/modified) for suspicious tokens
+if git diff --cached -U0 | grep -E "$PATTERNS" >/dev/null 2>&1; then
+  echo -e "${RED}ERROR: Potential secret detected in staged changes. Commit aborted.${NC}" >&2
+  echo "If this is a false positive, adjust the hook patterns." >&2
+  exit 1
+fi
+
+echo -e "${GREEN}[pre-commit] No secrets detected.${NC}" >&2
+exit 0
