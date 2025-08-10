@@ -29,6 +29,42 @@ Thumbs.db
 # Logs
 *.log
 logs/
+HEALTH_CHECK_RESULT.txt
+DEPLOYMENT_LOG.txt
+
+# Posting / automation generated JSON artifacts
+posting-results-*.json
+bluesky-output/
+bluesky-real-posts/
+mastodon-output/
+linkedin-output/
+zapier-output/
+
+# Large source tarballs / binaries
+LocalAI-v*.tar.gz
+local-ai-v*-darwin-* 
+
+# Node modules (if accidentally added in submodules)
+**/node_modules/
+
+# Generated status / completion markdowns
+*_SUCCESS*.md
+*_COMPLETE*.md
+*_STATUS*.md
+FINAL_*.md
+MULTI_PLATFORM_SUCCESS.md
+SYSTEM_RECOVERY_COMPLETE.md
+TRANSFORMATION_COMPLETE.md
+
+# Health / history CSVs
+health-history.csv
+health-diff.csv
+
+# PIDs and runtime directories
+pids/
+
+# SSL cert artifacts
+ssl-certs/
 
 # Environment files
 .env

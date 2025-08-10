@@ -1,0 +1,82 @@
+name: 'Consolidated Success Notifications'
+description: 'Aggregate post-deploy notifications across Discord, Slack, Twitter, LinkedIn, dynamic backend data.'
+author: 'automation'
+runs:
+  using: 'composite'
+  steps:
+    - name: Run consolidated notifications
+      shell: bash
+      run: |
+        set -e
+        # Gate secrets into local vars with notices
+        get_secret(){
+          local key="$1"; local val="${{ format('{{{{ secrets.{0} }}}}', 'DUMMY') }}" # placeholder to appease linter
+        }
+        # Direct assignments with gating notices
+        BACKEND_URL='${{ secrets.BACKEND_API_URL }}'; [ -z "$BACKEND_URL" ] && echo '::notice::BACKEND_API_URL unset'
+        DISCORD_WEBHOOK_URL='${{ secrets.DISCORD_WEBHOOK_URL }}'; [ -z "$DISCORD_WEBHOOK_URL" ] && echo '::notice::DISCORD_WEBHOOK_URL unset'
+        SLACK_WEBHOOK_URL='${{ secrets.SLACK_WEBHOOK_URL }}'; [ -z "$SLACK_WEBHOOK_URL" ] && echo '::notice::SLACK_WEBHOOK_URL unset'
+        TWITTER_BEARER_TOKEN='${{ secrets.TWITTER_BEARER_TOKEN }}'; [ -z "$TWITTER_BEARER_TOKEN" ] && echo '::notice::TWITTER_BEARER_TOKEN unset'
+        LINKEDIN_ACCESS_TOKEN='${{ secrets.LINKEDIN_ACCESS_TOKEN }}'; [ -z "$LINKEDIN_ACCESS_TOKEN" ] && echo '::notice::LINKEDIN_ACCESS_TOKEN unset'
+        LINKEDIN_PERSON_URN='${{ secrets.LINKEDIN_PERSON_URN }}'; [ -z "$LINKEDIN_PERSON_URN" ] && echo '::notice::LINKEDIN_PERSON_URN unset'
+        MAILGUN_API_KEY='${{ secrets.MAILGUN_API_KEY }}'; [ -z "$MAILGUN_API_KEY" ] && echo '::notice::MAILGUN_API_KEY unset'
+        NETLIFY_SITE_ID='${{ secrets.NETLIFY_SITE_ID }}'; [ -z "$NETLIFY_SITE_ID" ] && echo '::notice::NETLIFY_SITE_ID unset'
+
+        site="https://${NETLIFY_SITE_ID}.netlify.app"
+        echo "[notifications] Preparing consolidated success notifications for ${site}" || true
+
+        fetch(){ curl -s "$1" || true; }
+        jget_top3(){ jq -r '.top[:3] | map("🏅 " + .user + ": $" + (.earnings|tostring)) | join("\n")'; }
+        post_discord(){ [ -z "$DISCORD_WEBHOOK_URL" ] && return 0; curl -s -X POST -H 'Content-Type: application/json' --data "{\"content\":\"$1\"}" "$DISCORD_WEBHOOK_URL" >/dev/null || true; }
+        post_slack(){ [ -z "$SLACK_WEBHOOK_URL" ] && return 0; curl -s -X POST -H 'Content-type: application/json' --data "{\"text\":\"$1\"}" "$SLACK_WEBHOOK_URL" >/dev/null || true; }
+
+        leaderboard_json="" milestone_json="" badge_json=""
+        if [ -n "$BACKEND_URL" ]; then
+          leaderboard_json=$(fetch "$BACKEND_URL/api/leaderboard")
+          milestone_json=$(fetch "$BACKEND_URL/api/milestone-latest")
+          badge_json=$(fetch "$BACKEND_URL/api/badge-latest")
+        fi
+
+        top3_lines=""
+        if command -v jq >/dev/null 2>&1 && [ -n "$leaderboard_json" ]; then
+          top3_lines=$(echo "$leaderboard_json" | jget_top3 || true)
+        fi
+
+        milestone_msg=""; badge_msg=""
+        if command -v jq >/dev/null 2>&1; then
+          if [ -n "$milestone_json" ]; then
+            m=$(echo "$milestone_json" | jq -r .milestone); u=$(echo "$milestone_json" | jq -r .user)
+            [ "$m" != "null" ] && [ "$u" != "null" ] && milestone_msg="Milestone: $u reached $m." || true
+          fi
+          if [ -n "$badge_json" ]; then
+            b=$(echo "$badge_json" | jq -r .badge); u=$(echo "$badge_json" | jq -r .user)
+            [ "$b" != "null" ] && [ "$u" != "null" ] && badge_msg="Badge Earned: $u gained $b." || true
+          fi
+        fi
+
+        post_discord "🚀 Deployment succeeded: ${site}"
+        [ -n "$top3_lines" ] && post_discord "🏆 Top Referrers Today:\n$top3_lines"
+        [ -n "$milestone_msg" ] && post_discord "🎉 $milestone_msg"
+        [ -n "$badge_msg" ] && post_discord "🏅 $badge_msg"
+        post_discord "📣 Contests & Events: Referral contest active – climb the leaderboard!"
+
+        post_slack "Haunted Empire deployment succeeded: ${site}"
+        [ -n "$top3_lines" ] && post_slack "Top Referrers:\n$top3_lines"
+        [ -n "$milestone_msg" ] && post_slack "$milestone_msg"
+        [ -n "$badge_msg" ] && post_slack "$badge_msg"
+
+        if [ -n "$LINKEDIN_ACCESS_TOKEN" ] && [ -n "$LINKEDIN_PERSON_URN" ]; then
+          curl -s -X POST 'https://api.linkedin.com/v2/ugcPosts' \
+            -H "Authorization: Bearer $LINKEDIN_ACCESS_TOKEN" \
+            -H 'Content-Type: application/json' \
+            -d '{"author":"urn:li:person:'"$LINKEDIN_PERSON_URN"'","lifecycleState":"PUBLISHED","specificContent":{"com.linkedin.ugc.ShareContent":{"shareCommentary":{"text":"🚀 Haunted Empire update live! Visit: '$site'"},"shareMediaCategory":"NONE"}},"visibility":{"com.linkedin.ugc.MemberNetworkVisibility":"PUBLIC"}}' || true
+        fi
+
+        if [ -n "$TWITTER_BEARER_TOKEN" ]; then
+          curl -s -X POST "https://api.twitter.com/2/tweets" \
+            -H "Authorization: Bearer $TWITTER_BEARER_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"text":"🚀 Haunted Empire deployed: '$site'"}' || true
+        fi
+
+        echo "[notifications] Consolidated success notifications complete."

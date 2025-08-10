@@ -1,0 +1,41 @@
+name: Normalize Shell Line Endings
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Normalize .sh line endings
+        shell: pwsh
+        run: |
+          ./normalize-sh.ps1
+          Write-Host 'Checking for modifications...'
+          $diff = git diff --name-only
+          if (-not [string]::IsNullOrWhiteSpace($diff)) {
+            Write-Host 'Files changed:'
+            Write-Host $diff
+          } else { Write-Host 'No changes after normalization.' }
+
+      - name: Commit normalization (if needed)
+        if: success()
+        shell: pwsh
+        run: |
+          $diff = git diff --name-only
+          if (-not [string]::IsNullOrWhiteSpace($diff)) {
+            git config user.name 'github-actions'
+            git config user.email 'actions@users.noreply.github.com'
+            git add $diff
+            git commit -m 'chore: normalize shell script line endings (automated)'
+            git push
+          } else { Write-Host 'Nothing to commit.' }
