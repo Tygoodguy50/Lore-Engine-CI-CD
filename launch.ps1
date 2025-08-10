@@ -24,9 +24,16 @@ $pids = @{}
 function Start-NodeBackend {
   # Backend is a sibling directory to this repo root
   $serverDir = Join-Path (Split-Path $PSScriptRoot -Parent) 'haunted-empire-backend-1'
-  $serverPath = Join-Path $serverDir 'server.js'
-  if (-not (Test-Path $serverPath)) { Write-Host "[launch] Node backend not found ($serverPath)" -ForegroundColor Yellow; return }
-  Write-Host "[launch] Starting Node backend..." -ForegroundColor Cyan
+  $entryCandidates = @('index.js','server.js')
+  $serverPath = $null
+  foreach ($c in $entryCandidates) { $p = Join-Path $serverDir $c; if (Test-Path $p) { $serverPath = $p; break } }
+  if (-not $serverPath) { Write-Host "[launch] Node backend entry not found (checked: $($entryCandidates -join ', '))" -ForegroundColor Yellow; return }
+  Write-Host "[launch] Starting Node backend using $(Split-Path $serverPath -Leaf)..." -ForegroundColor Cyan
+  $logDir = Join-Path $PSScriptRoot 'logs'; if (-not (Test-Path $logDir)) { New-Item -ItemType Directory -Path $logDir | Out-Null }
+  $stdoutLog = Join-Path $logDir 'backend.stdout.log'
+  $stderrLog = Join-Path $logDir 'backend.stderr.log'
+  if (Test-Path $stdoutLog) { Remove-Item $stdoutLog -Force }
+  if (Test-Path $stderrLog) { Remove-Item $stderrLog -Force }
   $psi = New-Object System.Diagnostics.ProcessStartInfo
   $psi.FileName = 'node'
   $psi.Arguments = '"' + $serverPath + '"'
@@ -39,6 +46,8 @@ function Start-NodeBackend {
   $null = $proc.Start()
   $pids['node'] = $proc.Id
   Write-Host "[launch] Node backend PID: $($proc.Id)" -ForegroundColor Green
+  Start-Job -ScriptBlock { param($pid,$out,$err)
+      try { $p = Get-Process -Id $pid -ErrorAction Stop; while(-not $p.HasExited){ if($p.StandardOutput.Peek() -ge 0){ $p.StandardOutput.ReadToEnd() | Add-Content $out }; if($p.StandardError.Peek() -ge 0){ $p.StandardError.ReadToEnd() | Add-Content $err }; Start-Sleep -Milliseconds 300; $p.Refresh() } } catch {} } -ArgumentList $proc.Id,$stdoutLog,$stderrLog | Out-Null
 }
 
 function Start-BashLaunch {
