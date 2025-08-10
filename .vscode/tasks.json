@@ -12,15 +12,11 @@
 	},
 	{
 	  "label": "Post-Deployment Health Check",
-	  "type": "shell",
-	  "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"& { $out='HEALTH_CHECK_RESULT.txt'; $ports=@(3300,8081); try { ./check-secrets.ps1; ./launch.ps1 -SkipBash; if($LASTEXITCODE -ne 0){ throw 'launch failed' }; $healthy=$false; foreach($p in $ports){ try { $r=Invoke-WebRequest -Uri \"http://localhost:$p/health\" -UseBasicParsing -TimeoutSec 8; if($r.StatusCode -eq 200){ $healthy=$true; $r.Content | Out-File $out; break } } catch {} }; if(-not $healthy){ throw 'no health endpoints succeeded' }; if($env:DISCORD_WEBHOOK_URL){ $body=@{content='Health check passed'}; Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body|ConvertTo-Json) -ContentType 'application/json' } exit 0 } catch { ('Health check failed: ' + $_) | Out-File $out; if($env:DISCORD_WEBHOOK_URL){ $body=@{content='Health check failed: ' + $_}; Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body|ConvertTo-Json) -ContentType 'application/json' } exit 1 } }\"",
+	  "type": "process",
+	  "command": "powershell.exe",
+	  "args": ["-NoProfile","-ExecutionPolicy","Bypass","-File","./scripts/health-check.ps1","-LaunchFirst","-SkipBash"],
 	  "group": "test",
-	  "presentation": {
-		"echo": true,
-		"reveal": "always",
-		"focus": false,
-		"panel": "shared"
-	  },
+	  "presentation": {"echo": true,"reveal": "always","focus": false,"panel": "shared"},
 	  "problemMatcher": []
 	},
 	{
@@ -188,20 +184,13 @@
 	},
 	{
 	  "label": "Post-Deployment Health Check (Advanced)",
-	  "type": "shell",
-	  "command": "powershell.exe -Command \"$service = Get-Service -Name 'HauntedEmpireBackend' -ErrorAction SilentlyContinue; $ports=@(3300,8081); if ($service -and $service.Status -eq 'Running') { powershell.exe -ExecutionPolicy Bypass -File .\\check-secrets.ps1; powershell.exe -ExecutionPolicy Bypass -File .\\launch.ps1 -SkipBash; $healthy=$false; foreach($p in $ports){ try { $r=Invoke-WebRequest -Uri ('http://localhost:'+$p+'/health') -UseBasicParsing -TimeoutSec 8; if($r.StatusCode -eq 200){ $healthy=$true; $r.Content | Out-File HEALTH_CHECK_RESULT.txt; break } } catch {} }; if(-not $healthy){ 'Advanced health check failed: no endpoints responded 200' | Out-File HEALTH_CHECK_RESULT.txt; $body = @{content='Health check failed: no healthy endpoints'}; if($env:DISCORD_WEBHOOK_URL){ Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body | ConvertTo-Json) -ContentType 'application/json' }; exit 1 }; $body = @{content='Health check passed'}; if($env:DISCORD_WEBHOOK_URL){ Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body | ConvertTo-Json) -ContentType 'application/json' } } else { Write-Output 'Service not running' | Out-File HEALTH_CHECK_RESULT.txt; $body = @{content='Health check failed: service not running'}; if($env:DISCORD_WEBHOOK_URL){ Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK_URL -Method Post -Body ($body | ConvertTo-Json) -ContentType 'application/json' }; exit 1 }\"",
+	  "type": "process",
+	  "command": "powershell.exe",
+	  "args": ["-NoProfile","-ExecutionPolicy","Bypass","-File","./scripts/health-check.ps1","-LaunchFirst","-SkipBash","-RequireServiceName","HauntedEmpireBackend"],
 	  "group": "test",
-	  "presentation": {
-		"echo": true,
-		"reveal": "always",
-		"focus": false,
-		"panel": "shared"
-	  },
-	  "options": {
-		"env": {
-		  "HEALTH_SECRET": "${env:HEALTH_SECRET}"
-		}
-	  }
+	  "presentation": {"echo": true,"reveal": "always","focus": false,"panel": "shared"},
+	  "options": {"env": {"HEALTH_SECRET": "${env:HEALTH_SECRET}"}},
+	  "problemMatcher": []
 	},
 	{
 	  "label": "Sync Frontend Assets (Advanced)",
